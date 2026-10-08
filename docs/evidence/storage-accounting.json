@@ -1,0 +1,72 @@
+{
+  "kind": "analytical byte counts, not model measurements",
+  "baseline": "4e3d91628302586c7a94d994641b391d656826c4",
+  "s12_rates": [
+    {
+      "group": 20,
+      "nominal_bpw": 2.2,
+      "atlas_full_group_bpw": 2.2
+    },
+    {
+      "group": 15,
+      "nominal_bpw": 2.4000000000000004,
+      "atlas_full_group_bpw": 2.4
+    },
+    {
+      "group": 12,
+      "nominal_bpw": 2.6,
+      "atlas_full_group_bpw": 3.0
+    },
+    {
+      "group": 8,
+      "nominal_bpw": 3.1,
+      "atlas_full_group_bpw": 3.5
+    },
+    {
+      "group": 5,
+      "nominal_bpw": 4.0,
+      "atlas_full_group_bpw": 4.0
+    },
+    {
+      "group": 2,
+      "nominal_bpw": 7.6,
+      "atlas_full_group_bpw": 10.0
+    },
+    {
+      "group": 1,
+      "nominal_bpw": 13.6,
+      "atlas_full_group_bpw": 20.0
+    }
+  ],
+  "finite_examples": [
+    {
+      "rows": 3,
+      "columns": 23,
+      "group": 20,
+      "planner_bytes": 20,
+      "global_bytes": 22,
+      "atlas_bytes": 33
+    },
+    {
+      "rows": 1,
+      "columns": 2000,
+      "group": 15,
+      "planner_bytes": 601,
+      "global_bytes": 603,
+      "atlas_bytes": 603
+    },
+    {
+      "rows": 1,
+      "columns": 3,
+      "group": 1,
+      "planner_bytes": 6,
+      "global_bytes": 7,
+      "atlas_bytes": 8
+    }
+  ],
+  "s12_in_range_relative_bound_percent": 0.4071660115851472,
+  "trit_bits": 1.6,
+  "alphabet_log2": 1.584962500721156,
+  "packing_overhead_percent": 0.9487605714332048,
+  "latent_k5_r5_g64_full_group_bpw_fp16_scales": 16.5
+}

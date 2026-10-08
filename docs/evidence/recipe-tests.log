@@ -1,0 +1,13 @@
+test_original_editor_state_restores_protection_and_exceptions (test_model_atlas.OriginalAtlasEngineTests.test_original_editor_state_restores_protection_and_exceptions) ... ok
+test_ten_presets_and_import_export_roundtrip (test_model_atlas.OriginalAtlasEngineTests.test_ten_presets_and_import_export_roundtrip) ... ok
+test_mixed_recipe_preserves_protected_and_unlisted_tensors (test_model_atlas.RecipeMappingTests.test_mixed_recipe_preserves_protected_and_unlisted_tensors) ... ok
+test_s12_and_scale_override_identity (test_model_atlas.RecipeMappingTests.test_s12_and_scale_override_identity) ... ok
+test_tied_precision_conflict_is_rejected (test_model_atlas.RecipeMappingTests.test_tied_precision_conflict_is_rejected) ... ok
+test_unhandled_runtime_and_factorization_are_blockers (test_model_atlas.RecipeMappingTests.test_unhandled_runtime_and_factorization_are_blockers) ... ok
+test_vision_wrapper_is_not_text_decoder (test_model_atlas.RecipeMappingTests.test_vision_wrapper_is_not_text_decoder) ... ok
+test_wrong_model_shapes_groups_and_missing_targets_block (test_model_atlas.RecipeMappingTests.test_wrong_model_shapes_groups_and_missing_targets_block) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.780s
+
+OK

@@ -3,6 +3,10 @@
 A desktop safetensors converter with selectable weight/scale formats and the
 original Model Atlas HTML interface embedded in a tab. Built on Autogrid.
 
+**Read the paper:** [Tk-Integers: Explicit Base-3 Containers and Model-Aware Quantization Recipes](docs/TKINTEGERS_AUTOGRID_PAPER.md).
+The completed technical report includes exact packing formulas, scale formats,
+Model Atlas integration, related work and [recorded verification evidence](docs/PAPER_EVIDENCE.md).
+
 ## Quick install and launch
 
 **Supported full desktop setup:** Ubuntu 24.04+, Debian 12+, or KDE neon with an

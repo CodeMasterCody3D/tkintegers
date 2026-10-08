@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: 27B matches pinned official config
+ok 1 - 27B matches pinned official config
+  ---
+  duration_ms: 33.9868
+  type: 'test'
+  ...
+# Subtest: All bundled graphs have valid edges, help, and unique nodes
+ok 2 - All bundled graphs have valid edges, help, and unique nodes
+  ---
+  duration_ms: 29.654667
+  type: 'test'
+  ...
+# Subtest: Family differences survive adaptation
+ok 3 - Family differences survive adaptation
+  ---
+  duration_ms: 1.049905
+  type: 'test'
+  ...
+# Subtest: Runtime memory grows only in attention term
+ok 4 - Runtime memory grows only in attention term
+  ---
+  duration_ms: 0.533726
+  type: 'test'
+  ...
+# Subtest: Delta toy obeys decay before correction
+ok 5 - Delta toy obeys decay before correction
+  ---
+  duration_ms: 2.252845
+  type: 'test'
+  ...
+# Subtest: Bad configs fail; unknown architecture never gets invented internals
+ok 6 - Bad configs fail; unknown architecture never gets invented internals
+  ---
+  duration_ms: 1.355517
+  type: 'test'
+  ...
+# Subtest: Protection policy covers every decoder block and preserves fused/tied semantics
+ok 7 - Protection policy covers every decoder block and preserves fused/tied semantics
+  ---
+  duration_ms: 53.154473
+  type: 'test'
+  ...
+# Subtest: Precision inventory deduplicates fused weights and expands direct decay parameters
+ok 8 - Precision inventory deduplicates fused weights and expands direct decay parameters
+  ---
+  duration_ms: 24.231408
+  type: 'test'
+  ...
+# Subtest: Same-type paths separate DeltaNet, attention, and globals
+ok 9 - Same-type paths separate DeltaNet, attention, and globals
+  ---
+  duration_ms: 16.23034
+  type: 'test'
+  ...
+# Subtest: TKinteger metadata supports exactly k1–16 with five trits per byte
+ok 10 - TKinteger metadata supports exactly k1–16 with five trits per byte
+  ---
+  duration_ms: 2.342294
+  type: 'test'
+  ...
+# Subtest: Size estimator counts tied storage once and TKinteger padding/scales
+ok 11 - Size estimator counts tied storage once and TKinteger padding/scales
+  ---
+  duration_ms: 320.696533
+  type: 'test'
+  ...
+# Subtest: Plan import validates legacy precision, protection and sizes without altering inputs
+ok 12 - Plan import validates legacy precision, protection and sizes without altering inputs
+  ---
+  duration_ms: 15.120167
+  type: 'test'
+  ...
+# Subtest: 20/44 k1 remains distinct and counts partial blocks and byte padding
+ok 13 - 20/44 k1 remains distinct and counts partial blocks and byte padding
+  ---
+  duration_ms: 15.684972
+  type: 'test'
+  ...
+# Subtest: Vocabulary breakdown includes independent head and embedding precision and scales
+ok 14 - Vocabulary breakdown includes independent head and embedding precision and scales
+  ---
+  duration_ms: 14.613203
+  type: 'test'
+  ...
+# Subtest: Tied head-only precision applies to the shared storage once; conflicts rejected
+ok 15 - Tied head-only precision applies to the shared storage once; conflicts rejected
+  ---
+  duration_ms: 3.195284
+  type: 'test'
+  ...
+# Subtest: Actual TKinteger row padding, high-k scales, and group constraints
+ok 16 - Actual TKinteger row padding, high-k scales, and group constraints
+  ---
+  duration_ms: 61.592171
+  type: 'test'
+  ...
+# Subtest: Uniform S12 intermediates count integrated scales once and factorization counts both factors
+ok 17 - Uniform S12 intermediates count integrated scales once and factorization counts both factors
+  ---
+  duration_ms: 18.134082
+  type: 'test'
+  ...
+# Subtest: Per-layer scales, cross-type targeting and wide K1 storage are consistent
+ok 18 - Per-layer scales, cross-type targeting and wide K1 storage are consistent
+  ---
+  duration_ms: 14.175176
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 790.02126

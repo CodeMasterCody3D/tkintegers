@@ -1,0 +1,9 @@
+{"type": "embedded", "window": 56623147, "parent": 18874566}
+{"type": "loaded", "ok": true, "dom": {"nodes": 23, "review": true, "models": 10}, "message": ""}
+{"type": "evaluation", "id": "click", "result": "{\"dialog\":true,\"text\":\"A vector per token travels through the stack. Each decoder block adds two updates: one from token mixing and one from the feed-forward network. A block is a group of operators; an individual projection is not an entire decoder block.\",\"adjacent\":\"reviewInTkIntegers\"}"}
+{"type": "review"}
+{"type": "evaluation", "id": "review", "result": "clicked"}
+{"type": "evaluation", "id": "import", "result": "importing"}
+{"type": "evaluation", "id": "import-result", "result": "{\"done\":true,\"notice\":\"Imported roundtrip.json for Qwen/Qwen3.8-27B. Restored 48 precision choices and 0 custom protections. Size estimate recalculated. Sections absent from a partial export retain this model\u2019s saved settings.\"}"}
+PASS: original HTML, ten presets, SVG flow, real layer edit/dialog, adjacent handoff, saved-file review, original HTML recipe import, no conversion
+{"type": "evaluation", "id": "diagram", "result": "diagram"}

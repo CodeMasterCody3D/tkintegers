@@ -46,3 +46,11 @@ Output is a custom packed container with a manifest, not a standard HF model.
 - Fixed planner residual-k=0 rejection and preset scale-bits strings like `12.0`.
 - Grid-managed root keeps the progress/buttons visible at smaller sizes.
 - Previous UI bytes are archived in `code_vault/` before editing.
+
+## Technical paper
+`docs/TKINTEGERS_AUTOGRID_PAPER.md` is the completed version-1.0 implementation
+and analytical paper, based on app commit `4e3d916`. It separates the actual
+packing layouts and scale policies, covers Model Atlas and carried residuals,
+and includes verified related work. `docs/PAPER_EVIDENCE.md` and `docs/evidence/`
+retain the bounded checks. Do not turn its calculated byte counts or UI tests
+into claims about model quality, inference speed or training memory.

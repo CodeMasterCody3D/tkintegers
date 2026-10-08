@@ -63,3 +63,29 @@ install, activation, direct launch, Atlas launch, import checks and troubleshoot
 Verified a fresh temporary venv imports Tkinter, QtWebEngineWidgets and QtWebChannel;
 Node is version 22.23.0 here. Did not install torch or run model conversions for
 this documentation check.
+
+## October 8 — completed Tk-Integers technical paper
+
+Completed `docs/TKINTEGERS_AUTOGRID_PAPER.md` as version 1.0: approximately
+6,100 words, 11 sections, 19 equations, two appendices, primary-source related
+work, a screenshot of the literal embedded Atlas and a reproducibility protocol.
+
+The original draft treated the generic density planner as a universal exact
+payload count. Source audit showed flattened group padding, matrix-row packing,
+Atlas per-group S12 packing, complete-pair versus compact S12 scales, and
+native-width `tk_codec` codes need different formulas. All are now distinguished.
+For a 3×23 k1/G20/S12 tensor: planner 20 B, global payload 22 B, Atlas payload
+33 B (analytical, excluding outer headers). Historical unqualified payload
+predictions are superseded by the layout-specific formulas, not reinterpreted
+as new model measurements.
+
+Fresh receipts: 8 recipe tests and 18 original Atlas architecture tests passed;
+all scalar storage examples passed. Retained the prior actual-HTML handoff log,
+historical UI harness and screenshot. `docs/PAPER_EVIDENCE.md` maps claims to
+source files and records citation verification; `docs/references.bib` contains
+four bibliographic entries retrieved from DOI/publisher metadata. Structure
+check passed for sequential equations, local links and absence of placeholders.
+
+The completed paper is an implementation/analytical study, not a claim of
+new model quality, runtime speed or training-memory results. No container code,
+model artifact or training process was changed to write it.
