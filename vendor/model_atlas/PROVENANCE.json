@@ -1,0 +1,8 @@
+{
+  "repository": "https://github.com/CodeMasterCody3D/quant-test",
+  "commit": "aea688d38e13bee505e608abf5125a8cef159682",
+  "source_directory": "qwen-atlas",
+  "license": "MIT (see LICENSE); config snapshots retain their upstream provenance",
+  "integration": "The full original HTML/CSS/JS application is embedded in the Model Atlas Tk tab using Qt WebEngine. Vendored HTML/CSS/JS/data files are unchanged. The serving adapter adds a WebChannel bootstrap and appends one review button to app.js. quant/codec.py has only its base3_pack import changed to package-relative. quant/vendor/base3_pack.py and quant/formats.py are unchanged.",
+  "conversion_method": "Atlas codec.quantize(weight, None, spec): unweighted scale fitting and snapping to the stored format. No GPTQ Hessians, training, factorization or quant_job dispatch is performed."
+}

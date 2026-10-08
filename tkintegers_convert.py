@@ -249,15 +249,25 @@ def convert_model(
     output_dir: str | os.PathLike,
     config: ConversionConfig,
     progress: Callable[[int, int, str], None] | None = None,
+    *,
+    atlas_plan: dict | None = None,
 ) -> dict:
     """Convert a safetensors file/model directory without overwriting inputs."""
-    _, safe_open, save_file = _runtime()
+    torch, safe_open, save_file = _runtime()
     source = Path(model_path).expanduser().resolve()
     output = Path(output_dir).expanduser().resolve()
     if source == output or (source.is_dir() and output.is_relative_to(source)):
         raise ValueError("output must be outside the selected source model")
     if output.exists() and (not output.is_dir() or any(output.iterdir())):
         raise FileExistsError(f"refusing to write into non-empty output directory: {output}")
+    # Match the reviewed recipe against the actual source again before writing.
+    policies = None
+    if atlas_plan is not None:
+        from model_atlas import review_recipe
+        review = review_recipe(atlas_plan, inspect_model(source))
+        if review["issues"]:
+            raise ValueError("Atlas recipe cannot convert this source:\n" + "\n".join(review["issues"]))
+        policies = review["policies"]
     output.mkdir(parents=True, exist_ok=True)
     tensor_dir = output / "tensors"
     tensor_dir.mkdir()
@@ -272,13 +282,36 @@ def convert_model(
         "tensors": {},
         "summary": {"params": 0, "quantized_tensors": 0, "raw_tensors": 0, "payload_bytes": 0},
     }
+    if atlas_plan is not None:
+        manifest["atlas_recipe"] = atlas_plan
+        manifest["method"] = "Atlas format mix: unweighted scale fitting and stored-scale snapping; quant_job/Hessian/training options are not executed"
     manifest_path = output / "manifest.json"
     _write_manifest(manifest_path, manifest)
 
     for index, name in enumerate(names, 1):
         with safe_open(str(shards[name]), framework="pt", device="cpu") as handle:
             tensor = handle.get_tensor(name)
-        payload, entry, stats = quantize_tensor(tensor, config)
+        policy = policies[name] if policies is not None else None
+        if policy is None:
+            payload, entry, stats = quantize_tensor(tensor, config)
+        elif policy["kind"] == "atlas-tk":
+            from vendor.model_atlas.quant.codec import quantize
+            payload = quantize(tensor, None, policy)
+            entry = {"kind":"atlas-tk", "shape":list(tensor.shape),
+                     "dtype":str(tensor.dtype).replace("torch.", ""), "atlas_spec":policy}
+            stats = {"params":tensor.numel(), "quantized":True,
+                     "payload_bytes":sum(t.numel()*t.element_size() for t in payload.values())}
+        else:
+            value = tensor
+            if policy["kind"] == "float" and tensor.dtype.is_floating_point:
+                value = tensor.to(getattr(torch, policy["dtype"]))
+                if not torch.isfinite(value).all():
+                    raise ValueError(f"{name}: selected float format overflows or contains non-finite values")
+            payload = {"raw":value.contiguous()}
+            entry = {"kind":"raw", "shape":list(value.shape), "dtype":str(value.dtype).replace("torch.", "")}
+            stats = {"params":value.numel(), "quantized":False, "payload_bytes":value.numel()*value.element_size()}
+        if policy is not None:
+            entry["atlas_assignment"] = policy
         output_payload = {}
         for key, value in payload.items():
             output_payload[f"{name}.tk_{key}"] = value.contiguous().cpu()
@@ -327,6 +360,12 @@ def load_converted_tensor(
     if entry["kind"] == "raw":
         value = payload[f"{tensor_name}.tk_raw"]
         return value.to(getattr(torch, dtype)) if dtype else value
+
+    if entry["kind"] == "atlas-tk":
+        from vendor.model_atlas.quant.codec import unpack
+        value = unpack({key:payload[f"{tensor_name}.tk_{key}"] for key in ("codes", "scales")},
+                       entry["shape"], entry["atlas_spec"])
+        return value.to(getattr(torch, dtype or entry["dtype"]))
 
     from base3_pack import unpack_ktrit
 
@@ -381,7 +420,8 @@ def load_converted_tensor(
         raise ValueError(f"unsupported scale policy family: {policy.family}")
 
     group = int(entry["weights_per_scale"])
-    value = (codes.float().reshape(-1, group) * scales.reshape(-1, 1)).reshape(-1)
+    levels = (3 ** int(entry["weight_k"]) - 1) // 2
+    value = (codes.float().reshape(-1, group) / levels * scales.reshape(-1, 1)).reshape(-1)
     value = value[: math.prod(entry["shape"])].reshape(entry["shape"])
     if dtype:
         value = value.to(getattr(torch, dtype))

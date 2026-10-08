@@ -1,0 +1,16 @@
+{
+  "name": "qwen-atlas",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A config-driven, source-linked explorer for Qwen model anatomy",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "python3 -m http.server 8080",
+    "test:ui": "node tests/dom.cjs"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "26.1.0"
+  }
+}

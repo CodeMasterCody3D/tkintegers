@@ -1,4 +1,98 @@
-# AUTOGRID
+# Tk-Integers
+
+A desktop safetensors converter with selectable weight/scale formats and the
+original Model Atlas HTML interface embedded in a tab. Built on Autogrid.
+
+## Quick install and launch
+
+**Supported full desktop setup:** Ubuntu 24.04+, Debian 12+, or KDE neon with an
+X11 desktop or XWayland. Use the distribution's **Python 3.10+**, **Node.js 18+**,
+Tkinter, and Qt5 WebEngine. The embedded Atlas tab currently requires X11/XWayland.
+
+Clone this repository first, then run the following **in a terminal inside the
+`tkintegers` folder**. The repository is private, so cloning requires access and
+your normal GitHub authentication.
+
+```bash
+git clone https://github.com/CodeMasterCody3D/tkintegers.git
+cd tkintegers
+```
+
+**One copy-and-paste setup command:**
+
+```bash
+sudo apt-get update && \
+sudo apt-get install -y python3-venv python3-tk python3-pyqt5.qtwebengine nodejs && \
+/usr/bin/python3 -m venv --system-site-packages .venv && \
+.venv/bin/python -m pip install -r requirements.txt && \
+.venv/bin/python tkintegers_ui.py
+```
+
+This installs the desktop dependencies, creates `.venv`, installs the model-file
+dependencies from `requirements.txt`, and opens the app. It does not download or
+convert a model. Only the `apt-get` commands use `sudo`; the virtual environment
+and Python packages belong to your user.
+
+### Why this venv uses `--system-site-packages`
+
+Tkinter and Qt WebEngine come from the system packages above. Creating the venv
+with **`/usr/bin/python3`** and **`--system-site-packages`** makes those bindings
+available to the Python that runs the app. The embedded Atlas renderer uses that
+same interpreter. An isolated venv or a different Python installation may not
+see the system's Qt bindings.
+
+### Open it again later
+
+From the repository folder, launch with the venv interpreter directly:
+
+```bash
+.venv/bin/python tkintegers_ui.py
+```
+
+Or open directly to the **Model Atlas** tab:
+
+```bash
+.venv/bin/python tkintegers_ui.py --atlas
+```
+
+If you prefer to activate the venv in your terminal:
+
+```bash
+source .venv/bin/activate
+python tkintegers_ui.py
+# When finished with this terminal environment:
+deactivate
+```
+
+### Check the installation
+
+```bash
+.venv/bin/python -c "import sys, tkinter, torch, safetensors; from PyQt5 import QtWebEngineWidgets, QtWebChannel; print('Ready:', sys.executable)"
+node --version
+```
+
+The Python path should end in `.venv/bin/python`; Node should report version 18
+or newer. Run the app in your desktop session, not a headless SSH session.
+
+- **`No module named venv` / `ensurepip is not available`:** install
+  `python3-venv`, then repeat the venv creation command.
+- **Missing `tkinter` or `PyQt5.QtWebEngineWidgets`:** install the system packages
+  listed above and check that `.venv/pyvenv.cfg` contains
+  `include-system-site-packages = true`. If this is an existing isolated venv,
+  rerun `/usr/bin/python3 -m venv --system-site-packages .venv` with its matching
+  Python version, then reinstall `requirements.txt`.
+- **The app still says model dependencies are missing:** install with
+  `.venv/bin/python -m pip install -r requirements.txt`, close the app, and
+  reopen it with `.venv/bin/python` rather than a different system Python.
+- **Atlas says Node is missing or too old:** install Node.js 18+ and verify that
+  `node --version` works in the same terminal used to start the app.
+
+For updates after pulling new source, rerun
+`.venv/bin/python -m pip install -r requirements.txt` before reopening the app.
+
+---
+
+## Autogrid background
 
 **Turn any model into a full-size *integer* model — for free, where the math says it's free.**
 
@@ -72,10 +166,11 @@ originals backed up to one file first — every patch is byte-length-guarded and
 
 ## Usage
 
-**Requirements:** Python 3.9+, `torch`, `safetensors` (`pip install torch safetensors`).
+**Requirements:** use the virtual environment from [Quick install and launch](#quick-install-and-launch).
+The commands below assume it is activated with `source .venv/bin/activate`.
 
 ```bash
-# Desktop UI (tkinter, no browser, no server):
+# Original Autogrid desktop UI:
 python autogrid.py
 
 # Headless scan (prints the class of every tensor + a recommended k):
@@ -100,6 +195,55 @@ Converter**, or launch it directly:
 ```bash
 python autogrid.py --tk-ui
 ```
+
+The native interface uses a charcoal/grey theme with cyan accents:
+
+- **Tk-Integers**: separate file/folder pickers, output path, precision controls,
+  contextual scale explanations, live format summary and persistent progress.
+- **Tensor explorer**: searchable names, scrollable columns and full row details.
+- **Density planner**: presets, optional residual planes, editable recipe parts
+  and JSON export. This planner does not change the Converter tab's settings.
+- **Model Atlas**: the original Qwen Atlas **HTML application embedded in the
+  desktop tab**, with its own layout, SVG flow diagrams, clickable layer dialogs,
+  source-linked information, model presets, protection and precision controls,
+  memory lab, field guide, and import/export. It is not a native recreation.
+
+### Model Atlas → Tk-Integers
+
+1. Open **Model Atlas**, choose a Qwen preset or use the original import controls.
+2. Edit the quant mix in Atlas's original flow diagram or precision list.
+3. Click **Review in Tk-Integers →**, immediately beside **Import saved plan**.
+4. Save the JSON recipe when prompted. The app reads that exported file and
+   switches to **Tk-Integers**, showing the per-layer targets and protection.
+5. Select and inspect the matching source model. Review resolved tensors and any
+   unsupported settings before explicitly choosing **Convert reviewed mix**.
+
+This handoff never starts a model job. The format-conversion adapter supports
+original/protected tensors, explicit BF16/FP16/FP32 storage, and Atlas k-trit
+formats with S12/FP16/FP32 scales. Unsupported INT4/INT8 weight methods,
+factorization, runtime-state and operation targets remain visible and block
+conversion rather than being silently replaced. Atlas's separate calibration,
+Hessian, training and GitHub Actions options are retained in the recipe but are
+not executed by the desktop format-conversion button.
+
+The HTML embedding currently uses **Linux X11/XWayland**, Qt5 WebEngine and
+WebChannel. On Debian/Ubuntu/KDE neon: install `python3-pyqt5.qtwebengine` in the
+Python environment used for this app. Node.js 18+ runs the original Atlas plan
+validation on import; the HTML itself runs in the embedded browser. Atlas uses
+its own renderer process and local static-file server, not your Chrome profile.
+
+Open directly on the Atlas tab with `.venv/bin/python tkintegers_ui.py --atlas`.
+Vendored provenance is in `vendor/model_atlas/PROVENANCE.json`; original HTML,
+CSS and JS are preserved. A thin integration button is appended when serving
+`app.js`, and a WebChannel bootstrap is added to the served HTML.
+
+You can also launch the interface directly with `.venv/bin/python tkintegers_ui.py`.
+It opens without importing torch; if torch or safetensors is missing, it shows
+setup guidance and disables model actions until the dependencies are installed
+and the app is restarted. Layout and planner inspection do not load a model.
+
+Model operations run in a background thread. The conversion inputs stay locked
+during an operation so repeated clicks cannot start overlapping conversions.
 
 The converter accepts either one `.safetensors` file or an HF-layout directory.
 It inspects the tensors, lets you choose the weight `k`, weights-per-scale, and
