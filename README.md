@@ -92,20 +92,42 @@ python autogrid.py --revert  /path/to/model --backup model.autogrid-backup.safet
 `model.safetensors.index.json` or a single `model.safetensors`) or a
 `.safetensors` file directly.
 
-### Tk-Integer Designer
+### Tk-Integer Converter
 
-Open the integrated designer from the Autogrid window with **Tk-Integer
-Designer**, or launch it directly:
+Open the integrated converter from the Autogrid window with **Tk-Integer
+Converter**, or launch it directly:
 
 ```bash
 python autogrid.py --tk-ui
 ```
 
-The designer keeps Autogrid's scanner/converter as the base app and adds a
-recipe builder for arbitrary mixtures. It includes the canonical k selections
-(`k1`, `k3`, `k5`, `k8`, `k10`, `k13`, `k15`), every in-between k from 1 through
-16, every scale group from 1 through 128, arbitrary custom group sizes, 8/10/12/
-16/32-bit scale presets, and an optional carried-residual plane.
+The converter accepts either one `.safetensors` file or an HF-layout directory.
+It inspects the tensors, lets you choose the weight `k`, weights-per-scale, and
+scale container, then writes a new output directory. It refuses to write into a
+non-empty directory and never modifies the source model.
+
+The scale selector includes:
+
+- existing Tk container k10-log scales with an integer anchor;
+- TK S12 12-bit log2 scales;
+- ternary-integer linear or log2 scales with a separately chosen scale `k1..k16`;
+- int8, int16, and int32 linear scales with an integer anchor;
+- bf16, fp16, fp32, and fp64 scale values.
+
+The default conversion is weight `k5`, group `128`, with existing k10-log
+container scales. The weight and scale `k` choices are independent.
+
+The output is a packed Tk-Integer container, not a dense HF checkpoint. It
+contains one safetensors shard per source tensor plus `manifest.json`, which
+records the original shape/dtype, code packing, scale encoding, and output
+payload keys. A runtime loader must read the manifest to reconstruct tensors.
+
+Non-floating tensors are copied as raw payloads. Floating tensors are grouped,
+quantized to balanced ternary k-trit codes, packed, and saved with the selected
+scale stream.
+
+The lower mixture panel remains available for designing different formats for
+different model regions and exporting a `tkintegers-mixture-v1` recipe.
 
 For a weight plane with k trits/value, `g` weights per scale, and `s` scale
 bits, the ideal density is:

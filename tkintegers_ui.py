@@ -1,11 +1,18 @@
-"""Tkinter designer for arbitrary Tk-Integer mixtures."""
+"""Tkinter safetensor converter and Tk-Integer mixture designer."""
 from __future__ import annotations
 
 import json
+import queue
+import threading
 from pathlib import Path
-from typing import Optional
 
-from tkintegers import ContainerSpec, density_ladder, mixture_stats, preset_specs
+from tkintegers import (
+    ContainerSpec,
+    density_ladder,
+    mixture_stats,
+    preset_specs,
+    scale_policy_choices,
+)
 
 
 EXAMPLE_WEIGHTS = 1_000_000
@@ -36,9 +43,9 @@ def launch_tkintegers_ui(parent=None):
     from tkinter import filedialog, messagebox, ttk
 
     window = tk.Toplevel(parent) if parent is not None else tk.Tk()
-    window.title("TAARDIS Tk-Integers Designer")
-    window.geometry("1280x820")
-    window.minsize(1040, 680)
+    window.title("TAARDIS Tk-Integers Converter")
+    window.geometry("1440x960")
+    window.minsize(1120, 760)
 
     presets = preset_specs()
     preset_by_name = {spec.name: spec for spec in presets}
@@ -46,12 +53,199 @@ def launch_tkintegers_ui(parent=None):
 
     header = ttk.Frame(window, padding=(16, 14, 16, 8))
     header.pack(fill="x")
-    ttk.Label(header, text="TK-INTEGERS", font=("TkDefaultFont", 18, "bold")).pack(anchor="w")
+    ttk.Label(header, text="TK-INTEGERS CONVERTER", font=("TkDefaultFont", 18, "bold")).pack(anchor="w")
     ttk.Label(
         header,
-        text=("Design any mixture of k-trit planes and scale densities. "
-              "Ideal bpw is the bit formula; payload bpw includes byte padding."),
+        text=("Select a safetensors model, choose the weight k and scale container, "
+              "then write a manifest-backed packed Tk-Integer model."),
     ).pack(anchor="w", pady=(3, 0))
+
+    conversion_queue = queue.Queue()
+    conversion_frame = ttk.LabelFrame(window, text="Convert safetensors model", padding=10)
+    conversion_frame.pack(fill="x", padx=12, pady=(0, 8))
+    conversion_vars = {
+        "model": tk.StringVar(),
+        "output": tk.StringVar(),
+        "weight_k": tk.StringVar(value="5"),
+        "group": tk.StringVar(value="128"),
+        "scale_k": tk.StringVar(value="5"),
+        "scale_label": tk.StringVar(value=scale_policy_choices()[0].label),
+        "status": tk.StringVar(value="Choose a source model and output directory."),
+    }
+    scale_choices = scale_policy_choices()
+    scale_by_label = {choice.label: choice.key for choice in scale_choices}
+
+    def browse_model() -> None:
+        selected = filedialog.askopenfilename(
+            parent=window,
+            title="Select safetensors model or shard",
+            filetypes=[("Safetensors", "*.safetensors"), ("All files", "*")],
+        )
+        if not selected:
+            selected = filedialog.askdirectory(parent=window, title="Select HF safetensors model directory")
+        if selected:
+            conversion_vars["model"].set(selected)
+            if not conversion_vars["output"].get().strip():
+                source = Path(selected)
+                stem = source.stem if source.is_file() else source.name
+                conversion_vars["output"].set(str(source.parent / f"{stem}.tkintegers"))
+
+    def browse_output() -> None:
+        selected = filedialog.askdirectory(parent=window, title="Select empty Tk-Integer output directory")
+        if selected:
+            conversion_vars["output"].set(selected)
+
+    path_row = ttk.Frame(conversion_frame)
+    path_row.pack(fill="x")
+    ttk.Label(path_row, text="Source model").pack(side="left")
+    ttk.Entry(path_row, textvariable=conversion_vars["model"]).pack(side="left", fill="x", expand=True, padx=6)
+    ttk.Button(path_row, text="Browse", command=browse_model).pack(side="left")
+    ttk.Label(path_row, text="Output").pack(side="left", padx=(12, 0))
+    ttk.Entry(path_row, textvariable=conversion_vars["output"], width=34).pack(side="left", padx=6)
+    ttk.Button(path_row, text="Browse", command=browse_output).pack(side="left")
+
+    option_row = ttk.Frame(conversion_frame)
+    option_row.pack(fill="x", pady=(8, 0))
+    ttk.Label(option_row, text="Weight k").pack(side="left")
+    ttk.Combobox(
+        option_row,
+        textvariable=conversion_vars["weight_k"],
+        values=[str(k) for k in range(1, 17)],
+        state="readonly",
+        width=5,
+    ).pack(side="left", padx=(5, 14))
+    ttk.Label(option_row, text="Weights / scale").pack(side="left")
+    ttk.Entry(option_row, textvariable=conversion_vars["group"], width=8).pack(side="left", padx=(5, 14))
+    ttk.Label(option_row, text="Scale container").pack(side="left")
+    scale_box = ttk.Combobox(
+        option_row,
+        textvariable=conversion_vars["scale_label"],
+        values=[choice.label for choice in scale_choices],
+        state="readonly",
+        width=42,
+    )
+    scale_box.pack(side="left", padx=5)
+    ttk.Label(option_row, text="Scale k").pack(side="left", padx=(10, 0))
+    scale_k_entry = ttk.Spinbox(
+        option_row,
+        from_=1,
+        to=16,
+        increment=1,
+        textvariable=conversion_vars["scale_k"],
+        width=5,
+    )
+    scale_k_entry.pack(side="left", padx=5)
+
+    action_row = ttk.Frame(conversion_frame)
+    action_row.pack(fill="x", pady=(8, 0))
+    conversion_progress = ttk.Progressbar(action_row, mode="determinate")
+    conversion_progress.pack(side="left", fill="x", expand=True, padx=(0, 8))
+    ttk.Button(action_row, text="Inspect model", command=lambda: inspect_selected_model()).pack(side="left")
+    ttk.Button(action_row, text="CONVERT MODEL", command=lambda: convert_selected_model()).pack(side="left", padx=6)
+    ttk.Label(conversion_frame, textvariable=conversion_vars["status"], wraplength=1200).pack(anchor="w", pady=(6, 0))
+
+    model_table_frame = ttk.LabelFrame(conversion_frame, text="Model tensors", padding=6)
+    model_table_frame.pack(fill="x", pady=(8, 0))
+    model_columns = ("tensor", "shape", "dtype", "params", "source")
+    model_table = ttk.Treeview(model_table_frame, columns=model_columns, show="headings", height=5)
+    for column, title, width in (
+        ("tensor", "tensor", 410),
+        ("shape", "shape", 170),
+        ("dtype", "dtype", 90),
+        ("params", "parameters", 120),
+        ("source", "source shard", 420),
+    ):
+        model_table.heading(column, text=title)
+        model_table.column(column, width=width, minwidth=80, stretch=column in {"tensor", "source"})
+    model_table.pack(fill="x", expand=True)
+
+    def update_scale_controls(*_event) -> None:
+        key = scale_by_label.get(conversion_vars["scale_label"].get(), "")
+        state = "normal" if key in {"ternary-linear", "ternary-log"} else "disabled"
+        scale_k_entry.configure(state=state)
+
+    scale_box.bind("<<ComboboxSelected>>", update_scale_controls)
+    update_scale_controls()
+
+    def conversion_config():
+        from tkintegers_convert import ConversionConfig
+
+        key = scale_by_label.get(conversion_vars["scale_label"].get())
+        if not key:
+            raise ValueError("choose a scale container")
+        return ConversionConfig(
+            weight_k=_parse_positive(conversion_vars["weight_k"].get(), "weight k"),
+            weights_per_scale=_parse_positive(conversion_vars["group"].get(), "weights / scale"),
+            scale_type=key,
+            scale_k=_parse_positive(conversion_vars["scale_k"].get(), "scale k"),
+        )
+
+    def inspect_selected_model() -> None:
+        model_path = conversion_vars["model"].get().strip()
+        if not model_path:
+            messagebox.showerror("Tk-Integers", "Select a safetensors model first.", parent=window)
+            return
+        model_table.delete(*model_table.get_children())
+        conversion_vars["status"].set("Reading tensor metadata ...")
+
+        def worker() -> None:
+            try:
+                from tkintegers_convert import inspect_model
+
+                rows = inspect_model(model_path)
+                conversion_queue.put(("inspect", rows))
+            except Exception as exc:
+                conversion_queue.put(("error", str(exc)))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def convert_selected_model() -> None:
+        model_path = conversion_vars["model"].get().strip()
+        output_path = conversion_vars["output"].get().strip()
+        if not model_path or not output_path:
+            messagebox.showerror(
+                "Tk-Integers",
+                "Select both a safetensors source model and an output directory.",
+                parent=window,
+            )
+            return
+        try:
+            config = conversion_config()
+        except ValueError as exc:
+            messagebox.showerror("Tk-Integers", str(exc), parent=window)
+            return
+        output = Path(output_path).expanduser()
+        if output.exists() and (not output.is_dir() or any(output.iterdir())):
+            messagebox.showerror(
+                "Tk-Integers",
+                "The output directory is not empty. Choose a new directory; the converter never overwrites it.",
+                parent=window,
+            )
+            return
+        conversion_vars["status"].set(
+            f"Converting with weight k{config.weight_k}, g{config.weights_per_scale}, "
+            f"{config.scale_type} scales ..."
+        )
+        conversion_progress["value"] = 0
+        conversion_progress["maximum"] = max(1, len(model_table.get_children()))
+
+        def worker() -> None:
+            try:
+                from tkintegers_convert import convert_model
+
+                manifest = convert_model(
+                    model_path,
+                    output_path,
+                    config,
+                    progress=lambda index, total, name: conversion_queue.put(
+                        ("progress", index, total, name)
+                    ),
+                )
+                conversion_queue.put(("converted", manifest))
+            except Exception as exc:
+                conversion_queue.put(("error", str(exc)))
+
+        threading.Thread(target=worker, daemon=True).start()
 
     body = ttk.Panedwindow(window, orient="horizontal")
     body.pack(fill="both", expand=True, padx=12, pady=8)
@@ -326,8 +520,52 @@ def launch_tkintegers_ui(parent=None):
     for variable in (values["k"], values["scale_bits"]):
         variable.trace_add("write", refresh_ladder)
 
+    def pump_conversion() -> None:
+        try:
+            while True:
+                message = conversion_queue.get_nowait()
+                if message[0] == "inspect":
+                    rows = message[1]
+                    model_table.delete(*model_table.get_children())
+                    for row in rows:
+                        model_table.insert(
+                            "",
+                            "end",
+                            values=(
+                                row["tensor"],
+                                str(tuple(row["shape"])),
+                                row["dtype"],
+                                f"{row['params']:,}",
+                                Path(row["source_shard"]).name,
+                            ),
+                        )
+                    conversion_progress["value"] = 0
+                    conversion_progress["maximum"] = max(1, len(rows))
+                    conversion_vars["status"].set(f"Inspected {len(rows):,} tensors. Ready to convert.")
+                elif message[0] == "progress":
+                    _, index, total, name = message
+                    conversion_progress["maximum"] = total
+                    conversion_progress["value"] = index
+                    conversion_vars["status"].set(f"Converted {index:,}/{total:,}: {name}")
+                elif message[0] == "converted":
+                    manifest = message[1]
+                    summary_data = manifest["summary"]
+                    conversion_progress["value"] = conversion_progress["maximum"]
+                    conversion_vars["status"].set(
+                        f"Finished: {summary_data['quantized_tensors']:,} quantized tensors, "
+                        f"{summary_data['raw_tensors']:,} raw tensors. "
+                        f"Manifest: {Path(conversion_vars['output'].get()) / 'manifest.json'}"
+                    )
+                elif message[0] == "error":
+                    conversion_progress["value"] = 0
+                    conversion_vars["status"].set(f"ERROR: {message[1]}")
+        except queue.Empty:
+            pass
+        window.after(150, pump_conversion)
+
     refresh_ladder()
     add_part()
+    pump_conversion()
     if parent is None:
         window.mainloop()
     return window

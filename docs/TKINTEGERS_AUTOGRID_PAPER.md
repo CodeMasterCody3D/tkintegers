@@ -1,10 +1,11 @@
 # Tk-Integers and Autogrid
 
-## A format-density designer for packed k-trit model storage
+## A safetensor converter for packed k-trit model storage
 
-**Status:** engineering paper draft. The UI and accounting are implemented;
-model-quality claims and broad novelty claims remain open until matched model
-runs and primary-source comparisons are attached.
+**Status:** engineering paper draft. The UI, tensor conversion path, and
+accounting are implemented; model-quality claims and broad novelty claims
+remain open until matched model runs and primary-source comparisons are
+attached.
 
 ## Abstract
 
@@ -12,11 +13,13 @@ Tk-Integers represents a value with packed balanced base-3 trits and an
 explicit scale stream. The number of trits per value (`k`) controls the code
 resolution. The number of weights sharing a scale controls a second,
 independent density axis: using more scales per weight increases bits per
-weight without changing `k`. This paper introduces the Tk-Integer Designer,
-built into the MIT-licensed Autogrid desktop application. It lets a user build
-arbitrary mixtures of k-trit planes, scale densities, scale precisions, and
-optional carried-residual planes, then reports both ideal and finite byte
-payload density.
+weight without changing `k`. This paper introduces the Tk-Integer Converter,
+built into the MIT-licensed Autogrid desktop application. It converts a
+selected safetensors model into a manifest-backed packed container using
+arbitrary k-trit weight codes and selectable scale encodings. Its mixture panel
+also lets a user build arbitrary mixtures of k-trit planes, scale densities,
+scale precisions, and optional carried-residual planes, then reports both ideal
+and finite byte payload density.
 
 The important distinction is between a code-depth ladder and a scale-density
 ladder. A single k choice does not identify a complete format. For example,
@@ -85,21 +88,37 @@ mixture_bpw = 8 * sum(payload_bytes_i) / sum(n_i)
 This permits a k1 S12 embedding, k3 attention projections, k5 MLP blocks, and a
 k8 sensitive head in one recipe without hiding the scale overhead of any part.
 
-## 4. Autogrid integration
+## 4. Scale containers
 
-Autogrid remains responsible for scanning a safetensors model, measuring each
-tensor against its source container's noise floor, refusing tensors that need
-real placement/reconstruction, and performing reversible byte-length-guarded
-patches. The Tk-Integer Designer is the format-planning layer beside that
-scanner. It does not turn a density estimate into a quality claim and it does
-not silently convert a model.
+The scale stream is an independent format choice. The converter exposes:
+
+- existing k10-log integer-anchor scales;
+- the fixed TK S12 12-bit log2 scale;
+- packed ternary-linear and ternary-log scale codes at independently chosen
+  `k1..k16`;
+- int8, int16, and int32 linear codes with an integer anchor;
+- direct bf16, fp16, fp32, and fp64 scale values.
+
+The selected policy is recorded in `manifest.json` for every tensor. The
+integer and ternary policies keep per-scale codes integer; their shared anchor
+and encoding parameters are stored as integer metadata.
+
+## 5. Autogrid integration
+
+Autogrid remains responsible for its existing noise-floor scan and reversible
+in-place patch path. The Tk-Integer Converter is a separate output path beside
+that scanner: it reads one source tensor at a time and writes a new shard plus
+manifest entry. It never overwrites the selected source or a non-empty output
+directory.
 
 The app exposes the canonical k presets and the complete in-between ladder. A
-user can select a preset, alter any field, add the result as one mixture part,
-and repeat the process for every model region. The exported JSON is a recipe,
-not a checkpoint.
+user can select a model, inspect its tensors, choose a global conversion policy,
+and write a packed container. The mixture panel can select a preset, alter any
+field, add the result as one mixture part, and repeat the process for every
+model region. The exported JSON is a recipe, while the converter output is a
+manifest-backed checkpoint container.
 
-## 5. Evidence boundary
+## 6. Evidence boundary
 
 The following are directly supported by the implementation:
 
@@ -110,24 +129,28 @@ The following are directly supported by the implementation:
 - weighted mixture accounting;
 - optional residual-plane accounting;
 - Autogrid integration without changing its existing scan/convert safeguards.
+- safetensors tensor-by-tensor conversion with non-empty-output protection;
+- manifest recording of code packing and scale policy.
 
 The following remain open:
 
 - model-quality impact of each scale density;
 - whether a specific mixture is optimal for a model family;
 - end-to-end runtime and memory under every backend;
+- compatibility with a specific model runtime or HF loader;
 - novelty relative to all prior grouped-scale, residual, ternary, and low-bit
   training formats.
 
 The application should therefore report density as an engineering fact and
 leave quality to the existing Autogrid measurement and later model tests.
 
-## 6. Reproducibility
+## 7. Reproducibility
 
 The implementation is contained in:
 
 - `tkintegers.py` for format definitions and accounting;
-- `tkintegers_ui.py` for the desktop designer;
+- `tkintegers_convert.py` for safetensors inspection and conversion;
+- `tkintegers_ui.py` for the desktop converter and mixture designer;
 - `autogrid.py` for the scanner/converter and integration button;
 - `tests/test_tkintegers.py` for S12, padding, residual, ladder, and mixture
   checks.

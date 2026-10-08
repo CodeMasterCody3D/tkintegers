@@ -1,6 +1,13 @@
 import unittest
 
-from tkintegers import ContainerSpec, density_ladder, mixture_stats, preset_specs
+from tkintegers import (
+    ContainerSpec,
+    density_ladder,
+    mixture_stats,
+    preset_specs,
+    resolve_scale_policy,
+    scale_policy_choices,
+)
 
 
 class TkIntegerMathTests(unittest.TestCase):
@@ -44,6 +51,20 @@ class TkIntegerMathTests(unittest.TestCase):
         self.assertIn("TK S12 / g20", names)
         self.assertIn("TK k5 / g128 / s10", names)
         self.assertIn("TK k15 / g128 / s10", names)
+
+    def test_scale_policy_choices_cover_integer_and_float_families(self):
+        keys = {choice.key for choice in scale_policy_choices()}
+        self.assertIn("existing-k10-log", keys)
+        self.assertIn("tk-s12", keys)
+        self.assertIn("int8-linear", keys)
+        self.assertIn("bf16", keys)
+        self.assertAlmostEqual(resolve_scale_policy("ternary-log", 8).bits, 12.8)
+
+    def test_container_spec_records_a_non_custom_scale_policy(self):
+        spec = ContainerSpec(5, 128, 0, scale_type="ternary-log", scale_k=8)
+        self.assertEqual(spec.scale_type, "ternary-log")
+        self.assertEqual(spec.scale_k, 8)
+        self.assertAlmostEqual(spec.scale_bits, 12.8)
 
 
 if __name__ == "__main__":

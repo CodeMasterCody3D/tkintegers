@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from math import ceil
-from typing import Iterable, Mapping, Optional
+from typing import Iterable, Mapping
 
 
 TRIT_BITS = 8.0 / 5.0
@@ -25,10 +25,90 @@ DEFAULT_SCALE_BITS = (8, 10, 12, 16, 32)
 DEFAULT_SCALE_GROUPS = (1, 2, 4, 8, 12, 15, 16, 20, 24, 32, 48, 64, 96, 128)
 
 
+@dataclass(frozen=True)
+class ScalePolicy:
+    """How one per-group scale is stored in a converted safetensor."""
+
+    key: str
+    label: str
+    family: str
+    bits: float
+    k: int = 0
+    dtype: str = ""
+
+    def to_dict(self) -> dict:
+        return {
+            "key": self.key,
+            "label": self.label,
+            "family": self.family,
+            "bits": self.bits,
+            "k": self.k,
+            "dtype": self.dtype,
+        }
+
+
+_FIXED_SCALE_POLICIES = {
+    "existing-k10-log": ScalePolicy(
+        "existing-k10-log", "Existing container: k10 log + integer anchor", "existing", 16.0, 10
+    ),
+    "tk-s12": ScalePolicy("tk-s12", "TK S12: 12-bit log2", "tk-log-fixed", 12.0),
+    "int8-linear": ScalePolicy("int8-linear", "int8 linear + integer anchor", "int-linear", 8.0, dtype="int8"),
+    "int16-linear": ScalePolicy("int16-linear", "int16 linear + integer anchor", "int-linear", 16.0, dtype="int16"),
+    "int32-linear": ScalePolicy("int32-linear", "int32 linear + integer anchor", "int-linear", 32.0, dtype="int32"),
+    "bf16": ScalePolicy("bf16", "bf16 scale values", "float", 16.0, dtype="bfloat16"),
+    "fp16": ScalePolicy("fp16", "fp16 scale values", "float", 16.0, dtype="float16"),
+    "fp32": ScalePolicy("fp32", "fp32 scale values", "float", 32.0, dtype="float32"),
+    "fp64": ScalePolicy("fp64", "fp64 scale values", "float", 64.0, dtype="float64"),
+}
+
+
+def scale_policy_choices() -> tuple[ScalePolicy, ...]:
+    """Return the fixed UI choices; ternary choices take a separate k field."""
+    return (
+        _FIXED_SCALE_POLICIES["existing-k10-log"],
+        _FIXED_SCALE_POLICIES["tk-s12"],
+        ScalePolicy("ternary-linear", "Ternary integer linear scale (choose k)", "ternary-linear", TRIT_BITS * 5, 5),
+        ScalePolicy("ternary-log", "Ternary integer log2 scale (choose k)", "ternary-log", TRIT_BITS * 5, 5),
+        _FIXED_SCALE_POLICIES["int8-linear"],
+        _FIXED_SCALE_POLICIES["int16-linear"],
+        _FIXED_SCALE_POLICIES["int32-linear"],
+        _FIXED_SCALE_POLICIES["bf16"],
+        _FIXED_SCALE_POLICIES["fp16"],
+        _FIXED_SCALE_POLICIES["fp32"],
+        _FIXED_SCALE_POLICIES["fp64"],
+    )
+
+
+def resolve_scale_policy(key: str, k: int = 5) -> ScalePolicy:
+    """Resolve a scale choice and validate its optional ternary k."""
+    key = str(key).strip().lower()
+    if key == "existing":
+        key = "existing-k10-log"
+    if key in _FIXED_SCALE_POLICIES:
+        return _FIXED_SCALE_POLICIES[key]
+    if key not in {"ternary-linear", "ternary-log"}:
+        raise ValueError(f"unknown scale policy: {key}")
+    k = _positive_int(k, "scale k")
+    if k > 16:
+        raise ValueError("scale k must be between 1 and 16")
+    family = key.removeprefix("ternary-")
+    return ScalePolicy(key, f"Ternary integer {family} scale k{k}", key, TRIT_BITS * k, k)
+
+
+def scale_policy_label(key: str, k: int = 5) -> str:
+    return resolve_scale_policy(key, k).label
+
+
 def _positive_int(value: int, label: str) -> int:
     if isinstance(value, bool) or int(value) != value or int(value) <= 0:
         raise ValueError(f"{label} must be a positive integer")
     return int(value)
+
+
+def _positive_number(value: float, label: str) -> float:
+    if isinstance(value, bool) or float(value) <= 0:
+        raise ValueError(f"{label} must be positive")
+    return float(value)
 
 
 @dataclass(frozen=True)
@@ -37,18 +117,29 @@ class ContainerSpec:
 
     k: int
     weights_per_scale: int
-    scale_bits: int
+    scale_bits: float
     residual_k: int = 0
     residual_weights_per_scale: int = 0
     residual_scale_bits: int = 0
     name: str = ""
+    scale_type: str = "custom"
+    scale_k: int = 0
+    residual_scale_type: str = "custom"
+    residual_scale_k: int = 0
 
     def __post_init__(self) -> None:
         k = _positive_int(self.k, "k")
         group = _positive_int(self.weights_per_scale, "weights_per_scale")
-        scale_bits = _positive_int(self.scale_bits, "scale_bits")
         if k > 16:
             raise ValueError("k must be between 1 and 16")
+        scale_type = str(self.scale_type or "custom").strip().lower()
+        scale_k = int(self.scale_k or 0)
+        if scale_type == "custom":
+            scale_bits = _positive_number(self.scale_bits, "scale_bits")
+        else:
+            policy = resolve_scale_policy(scale_type, scale_k or 5)
+            scale_bits = policy.bits
+            scale_k = policy.k
         if scale_bits > 64:
             raise ValueError("scale_bits must be between 1 and 64")
         rk = int(self.residual_k)
@@ -58,26 +149,48 @@ class ContainerSpec:
             rg = self.residual_weights_per_scale or group
             rs = self.residual_scale_bits or scale_bits
             _positive_int(rg, "residual_weights_per_scale")
-            _positive_int(rs, "residual_scale_bits")
-            if rs > 64:
+            _positive_number(rs, "residual_scale_bits")
+            if float(rs) > 64:
                 raise ValueError("residual_scale_bits must be between 1 and 64")
+        residual_scale_type = str(self.residual_scale_type or "custom").strip().lower()
+        residual_scale_k = int(self.residual_scale_k or 0)
+        if residual_scale_type != "custom" and rk:
+            policy = resolve_scale_policy(residual_scale_type, residual_scale_k or 5)
+            residual_scale_bits = policy.bits
+            residual_scale_k = policy.k
         object.__setattr__(self, "k", k)
         object.__setattr__(self, "weights_per_scale", group)
         object.__setattr__(self, "scale_bits", scale_bits)
+        object.__setattr__(self, "scale_type", scale_type)
+        object.__setattr__(self, "scale_k", scale_k)
         object.__setattr__(self, "residual_k", rk)
         if rk:
             object.__setattr__(self, "residual_weights_per_scale", int(self.residual_weights_per_scale or group))
-            object.__setattr__(self, "residual_scale_bits", int(self.residual_scale_bits or scale_bits))
+            object.__setattr__(self, "residual_scale_bits", float(self.residual_scale_bits or scale_bits))
+            object.__setattr__(self, "residual_scale_type", residual_scale_type)
+            object.__setattr__(self, "residual_scale_k", residual_scale_k)
         else:
             object.__setattr__(self, "residual_weights_per_scale", 0)
             object.__setattr__(self, "residual_scale_bits", 0)
+            object.__setattr__(self, "residual_scale_type", "custom")
+            object.__setattr__(self, "residual_scale_k", 0)
         if not self.name:
             object.__setattr__(self, "name", self.format_name())
 
     def format_name(self) -> str:
-        result = f"TK-k{self.k}-g{self.weights_per_scale}-s{self.scale_bits}"
+        scale_name = self.scale_type if self.scale_type != "custom" else f"s{self.scale_bits:g}"
+        if self.scale_type.startswith("ternary-"):
+            scale_name += f"-k{self.scale_k}"
+        result = f"TK-k{self.k}-g{self.weights_per_scale}-{scale_name}"
         if self.residual_k:
-            result += f"+r{self.residual_k}-g{self.residual_weights_per_scale}-s{self.residual_scale_bits}"
+            residual_name = (
+                self.residual_scale_type
+                if self.residual_scale_type != "custom"
+                else f"s{self.residual_scale_bits:g}"
+            )
+            if self.residual_scale_type.startswith("ternary-"):
+                residual_name += f"-k{self.residual_scale_k}"
+            result += f"+r{self.residual_k}-g{self.residual_weights_per_scale}-{residual_name}"
         return result
 
     @property
@@ -211,5 +324,9 @@ def spec_from_dict(data: Mapping) -> ContainerSpec:
         "residual_weights_per_scale",
         "residual_scale_bits",
         "name",
+        "scale_type",
+        "scale_k",
+        "residual_scale_type",
+        "residual_scale_k",
     }
     return ContainerSpec(**{key: data[key] for key in allowed if key in data})
