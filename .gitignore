@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.venv/
+*.autogrid-backup.safetensors
+*.safetensors
+*.tkrecipe.json
+.pytest_cache/

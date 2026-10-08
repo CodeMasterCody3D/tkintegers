@@ -34,7 +34,8 @@ Same one-law as the pipeline: nothing leaves this tool off-grid, and nothing
 is written without a backup and a reload check.
 
     ./autogrid.py                      # the desktop UI
-    ./autogrid.py --scan PATH [--json out.json]      # headless scan
+    ./autogrid.py --tk-ui              # open the Tk-Integer designer directly
+     ./autogrid.py --scan PATH [--json out.json]      # headless scan
     ./autogrid.py --convert PATH --plan plan.json    # headless convert
     ./autogrid.py --revert PATH --backup FILE        # headless revert
 """
@@ -329,6 +330,10 @@ def launch_ui():
             filetypes=[("safetensors", "*.safetensors")])
         if p: path_var.set(p)
     ttk.Button(top, text="Browse", command=browse).pack(side="left")
+    def open_tkintegers():
+        from tkintegers_ui import launch_tkintegers_ui
+        launch_tkintegers_ui(root)
+    ttk.Button(top, text="Tk-Integer Designer", command=open_tkintegers).pack(side="left", padx=8)
     safety_var = tk.DoubleVar(value=1.0)
     ttk.Label(top, text="  safety×floor").pack(side="left")
     ttk.Spinbox(top, from_=0.25, to=4.0, increment=0.25, width=5,
@@ -504,8 +509,12 @@ def main():
     ap.add_argument("--json", metavar="OUT")
     ap.add_argument("--safety", type=float, default=1.0)
     ap.add_argument("--max-k", type=int, default=8)
+    ap.add_argument("--tk-ui", action="store_true", help="open the Tk-Integer mixture designer")
     a = ap.parse_args()
-    if a.scan:
+    if a.tk_ui:
+        from tkintegers_ui import launch_tkintegers_ui
+        launch_tkintegers_ui()
+    elif a.scan:
         rep = scan_model(a.scan, a.safety, a.max_k,
                          progress=lambda i, n, name:
                          print(f"  [{i}/{n}] {name[-60:]}", flush=True)

@@ -92,6 +92,37 @@ python autogrid.py --revert  /path/to/model --backup model.autogrid-backup.safet
 `model.safetensors.index.json` or a single `model.safetensors`) or a
 `.safetensors` file directly.
 
+### Tk-Integer Designer
+
+Open the integrated designer from the Autogrid window with **Tk-Integer
+Designer**, or launch it directly:
+
+```bash
+python autogrid.py --tk-ui
+```
+
+The designer keeps Autogrid's scanner/converter as the base app and adds a
+recipe builder for arbitrary mixtures. It includes the canonical k selections
+(`k1`, `k3`, `k5`, `k8`, `k10`, `k13`, `k15`), every in-between k from 1 through
+16, every scale group from 1 through 128, arbitrary custom group sizes, 8/10/12/
+16/32-bit scale presets, and an optional carried-residual plane.
+
+For a weight plane with k trits/value, `g` weights per scale, and `s` scale
+bits, the ideal density is:
+
+```text
+ideal bpw = 1.6 * k + s / g
+```
+
+The app also reports finite byte-payload bpw, which includes packed trit bytes,
+scale-stream padding, and residual planes. The remembered S12 choices are
+visible as presets: `k1-g20-s12` is 2.2 ideal bpw and `k1-g15-s12` is 2.4 ideal
+bpw. The exact finite payload can be slightly higher when a tensor has an odd
+number of scale codes or an incomplete group.
+
+Mixture recipes export as `tkintegers-mixture-v1` JSON and can assign a
+different k, scale density, scale precision, and residual to each model part.
+
 ---
 
 ## Why "integer, not smaller" is worth wanting
