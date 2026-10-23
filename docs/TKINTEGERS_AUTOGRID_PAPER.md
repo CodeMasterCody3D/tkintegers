@@ -2,14 +2,16 @@
 
 **Cody Dixon · TAARDIS**
 
-**Technical paper, version 1.0 · October 8, 2026**
+**Technical paper, version 1.1 · October 23, 2026**
 
 **Implementation studied:** `CodeMasterCody3D/tkintegers`, commit
 `4e3d91628302586c7a94d994641b391d656826c4` [6].
+**Reproduction snapshot (application, check scripts and original evidence):**
+`cb8ffdc7a6b5ddbd119408f15471113c4bc5396a` [6].
 **Atlas source:** `CodeMasterCody3D/quant-test`, commit
 `aea688d38e13bee505e608abf5125a8cef159682`, directory `qwen-atlas` [7].
 
-This is a completed implementation and analytical study. Its evidence consists
+This is an implementation-grounded analytical study. Its evidence consists
 of source inspection, exact storage calculations, recipe-validation tests and
 interface integration checks. It does not report a new language-model quality,
 training-memory or inference-speed benchmark. The distinction matters: a
@@ -257,6 +259,12 @@ Ternary-linear and ternary-log scales reuse the five-trit byte stream with an
 independent `k_s` from 1 through 16. With `M` scales, code storage is
 
 $$B_{\text{scale-code}}=\left\lceil\frac{Mk_s}{5}\right\rceil.$$
+
+For the linear policy, let `L_s = (3^k_s − 1)/2`. Scale codes are restricted
+to `0…L_s`, giving `L_s + 1` nonnegative levels; they do not use all `3^k_s`
+signed levels available to a weight code. The logarithmic policy can use signed
+codes because log2 scales may be negative. The described `torch.round` paths
+use nearest-even rounding at exact halfway cases.
 
 The linear policy adds 24 bytes of integer metadata; the logarithmic policy
 adds 32 bytes. The logarithmic policy stores quantized log2 values, which may
@@ -605,10 +613,13 @@ Writing the residual's own quantization error as
 
 $$w_{t+1}+r_{t+1}=w_t+r_t+u_t-\delta_t. \tag{18}$$
 
-This identity explains what is preserved and what can still be lost. An exact
-residual would conserve the proposed update in combined state; a quantized
-residual introduces its own error. The identity is not a convergence proof,
-an accuracy guarantee or a claim that residuals improve every training horizon.
+This is a real-arithmetic identity explaining what is preserved and what can
+still be lost. An exact residual would conserve the proposed update in combined
+state; a quantized residual introduces its own error. Executed floating-point
+additions, residual subtraction and reconstruction casts can introduce further
+rounding, so Equation (18) is not a bit-exact runtime-conservation guarantee.
+It is also not a convergence proof, an accuracy guarantee or a claim that
+residuals improve every training horizon.
 
 ### 7.2 Serialized versus resident size
 
@@ -744,31 +755,62 @@ reproducible.
 
 ### 10.1 Version and source record
 
-Use the implementation commit identified at the start of this paper. The vendor
-provenance records the independent Atlas commit. Original Atlas HTML/CSS/JS
-are retained; its codec's base3 import is adjusted to a package-relative import.
-The earlier UI and converter bytes are preserved in `code_vault/`.
+Two revisions serve different purposes. The audited **application** is commit
+`4e3d91628302586c7a94d994641b391d656826c4`. The complete **reproduction snapshot**
+is commit `cb8ffdc7a6b5ddbd119408f15471113c4bc5396a`: it adds the original paper,
+accounting script and evidence records without changing the application code.
+Use the latter for the commands below. Checking out only the application
+revision does not provide `docs/verify_paper_accounting.py`.
+
+For a new checkout of the public repository:
+
+```bash
+git clone https://github.com/CodeMasterCody3D/tkintegers.git
+cd tkintegers
+git checkout --detach cb8ffdc7a6b5ddbd119408f15471113c4bc5396a
+```
+
+Do not switch revisions in a working directory containing unsaved work; use a
+separate clean checkout for reproduction. This pins the originally studied
+implementation and verification material, not an unspecified future `master`.
+
+The vendor provenance records the independent Atlas commit. Original Atlas
+HTML/CSS/JS are retained; its codec's base3 import is adjusted to a
+package-relative import. The earlier UI and converter bytes are preserved in
+`code_vault/`. The original upstream Atlas repository is private, but its pinned
+[vendored snapshot is publicly available](https://github.com/CodeMasterCody3D/tkintegers/tree/cb8ffdc7a6b5ddbd119408f15471113c4bc5396a/vendor/model_atlas).
 
 The [repository README](../README.md#quick-install-and-launch) documents the
 Linux desktop setup and the system-site-packages venv needed to expose
 apt-installed Tk/Qt bindings. Starting the UI or opening Atlas does not require
 downloading model weights.
 
+This snapshot includes the actual `tkintegers_ui.py` desktop application,
+`tkintegers_convert.py`, both embedded-Atlas host modules and the vendored HTML
+assets. It is not merely an online demo. The GUI requires the documented
+desktop dependencies and an X11/XWayland session; its inclusion does not imply
+that numerical model conversion has been validated.
+
 ### 10.2 Reproduce the bounded checks
 
-From the repository root, the paper's scalar accounting check is:
+The non-model checks require Python 3.10 or newer and Node.js 18 or newer.
+From the pinned reproduction snapshot's root, run:
 
 ```bash
+set -e
+python3 -c 'import sys; assert sys.version_info >= (3, 10), "Python 3.10+ is required"'
+node -e 'if (Number(process.versions.node.split(".")[0]) < 18) throw new Error("Node.js 18+ is required")'
 python3 docs/verify_paper_accounting.py
-```
-
-It uses scalar arithmetic and metadata modules, not PyTorch or model execution.
-Recipe and architecture checks can be run as:
-
-```bash
 python3 -m unittest discover -s tests -p test_model_atlas.py -v
 node --test vendor/model_atlas/tests/architecture.test.js
 ```
+
+The accounting script uses scalar arithmetic and metadata modules, not PyTorch
+or model execution. The expected recorded outcomes are its passing assertions,
+eight recipe tests and 18 architecture tests, with no skips. In particular,
+missing Node.js makes two Python recipe tests skip; that is **not** a complete
+eight-test reproduction. The explicit prerequisite checks above fail before
+that partial result can be mistaken for the full check.
 
 For the GUI, start `.venv/bin/python tkintegers_ui.py --atlas`, open a block,
 edit a layer, export with **Review in Tk-Integers**, and verify the saved file
@@ -878,10 +920,14 @@ any of those semantic checks.
    Accessed October 8, 2026.
 6. Cody Dixon. **Tk-Integers standalone implementation.** TAARDIS, 2026.
    [Audited source commit](https://github.com/CodeMasterCody3D/tkintegers/tree/4e3d91628302586c7a94d994641b391d656826c4).
-   Private repository; access is required.
+   [Public reproduction snapshot, including check scripts and evidence](https://github.com/CodeMasterCody3D/tkintegers/tree/cb8ffdc7a6b5ddbd119408f15471113c4bc5396a).
+   The standalone repository is public as of this revision.
 7. CodeMasterCody3D. **Qwen Atlas source snapshot.** `quant-test`, 2026.
    [Pinned source directory](https://github.com/CodeMasterCody3D/quant-test/tree/aea688d38e13bee505e608abf5125a8cef159682/qwen-atlas).
-   Private repository; copied-file provenance and license are retained locally.
+   The original upstream repository is private. The
+   [public vendored snapshot and provenance](https://github.com/CodeMasterCody3D/tkintegers/tree/cb8ffdc7a6b5ddbd119408f15471113c4bc5396a/vendor/model_atlas)
+   preserve the copied files and MIT license for reproduction without upstream
+   private-repository access.
 
 Citation checks and the evidence boundaries are recorded in
 [`PAPER_EVIDENCE.md`](PAPER_EVIDENCE.md). Bibliographic metadata for the arXiv

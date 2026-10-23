@@ -14,8 +14,9 @@ X11 desktop or XWayland. Use the distribution's **Python 3.10+**, **Node.js 18+*
 Tkinter, and Qt5 WebEngine. The embedded Atlas tab currently requires X11/XWayland.
 
 Clone this repository first, then run the following **in a terminal inside the
-`tkintegers` folder**. The repository is private, so cloning requires access and
-your normal GitHub authentication.
+`tkintegers` folder**. This repository is public; reading or cloning it does not
+require access to the private upstream Atlas repository. The Atlas files needed
+by this build are included under `vendor/model_atlas/`.
 
 ```bash
 git clone https://github.com/CodeMasterCody3D/tkintegers.git
@@ -98,42 +99,41 @@ For updates after pulling new source, rerun
 
 ## Autogrid background
 
-**Turn any model into a full-size *integer* model — for free, where the math says it's free.**
+**Inspect balanced-ternary reconstruction error before choosing a conversion.**
 
 AUTOGRID is a desktop app + CLI that scans every tensor of a safetensors
 checkpoint, measures what it would cost to put that tensor on a
 **balanced-ternary integer grid** (`w ≈ s · Σ dᵢ·3⁻ⁱ`, digits `dᵢ ∈ {−1,0,+1}`),
-and converts the ones where the conversion is **below the noise the model was
-already saved with.** No retraining. No calibration data. Fully reversible.
+and compares the measured relative reconstruction error against a heuristic
+threshold derived from the source dtype. The legacy path uses no retraining or
+calibration data, but its rounding is generally lossy. A low error does not
+guarantee identical values, logits or model answers.
 
-This is **not quantization** — it doesn't make the model smaller. It's a
-**numeral-system change**: the same values, re-expressed as stacks of ternary
-digits so the model's parameters become *integers* instead of floats.
+The original in-place Autogrid rewrite retains the original tensor shapes and
+dtypes; it does not itself produce an integer-only runtime or the new packed
+Tk-Integer container. Its backup/revert mechanism can restore the original
+bytes when the required originals are retained. That is different from a
+lossless quantization map.
 
 ---
 
-## The idea: the conversion is quieter than the container
+## Interpretation of the dtype threshold
 
-A float format has its own rounding noise just by existing. **bf16** keeps 8
-significant bits, so it rounds every value it stores by up to **~0.39%**.
+For normal values rounded to nearest, BF16's conventional relative rounding
+bound is about **0.39%**. This is not a constant error attached to every stored
+value; values already representable in BF16 can be exact, and exceptional or
+subnormal values need separate treatment.
 
-A **k-digit** balanced-ternary stack has a relative error of exactly **3⁻ᵏ**:
+Autogrid compares a tensor-level relative L2 reconstruction error with such a
+threshold. It is a screening heuristic, not an elementwise error guarantee or
+a theorem of model equivalence. A small tensor-level error can still alter a
+sensitive component or change a model decision. Adding trits generally gives
+a finer representable grid, but `3⁻ᵏ` is not an exact arbitrary-weight relative
+error or a complete checkpoint-size formula.
 
-| digits `k` | error `3⁻ᵏ` | bits/value (group 128) |
-|---|---|---|
-| 6 | 0.14% | ~12.1 |
-| 8 | 0.015% | ~16.1 |
-
-At **k=8**, the ternary-integer error (0.015%) is **~25× smaller** than the bf16
-container's own rounding (0.39%). So converting a bf16 tensor to a k8 digit stack
-**discards less information than the checkpoint's storage format already did** —
-the model cannot notice a perturbation smaller than the noise it was saved with.
-
-**Measured proof:** on a 27-billion-parameter model, converting all 353
-normalization / state-space tensors to k8 integer stacks changed wikitext
-perplexity by **0.009%** over 274 chunks — one hundredth of the measurement's
-error bar. Field convention says "never touch the norms"; the noise-floor math
-says you can, and the measurement agrees.
+Historical Forge scores are not validation of this standalone converter. The
+[paper](docs/TKINTEGERS_AUTOGRID_PAPER.md) separates analytical storage results,
+interface/metadata checks and the numerical model studies still required.
 
 ---
 
@@ -142,14 +142,15 @@ says you can, and the measurement agrees.
 For each tensor, AUTOGRID measures the per-digit-budget error and classifies it:
 
 - 🟢 **FREE @ k** — a float tensor whose measured k-digit error is **at or below
-  its container's noise floor**. Converting it to a ternary-integer stack is free.
-  AUTOGRID recommends the smallest sufficient `k`.
+  the configured dtype-derived threshold**. `FREE` is the legacy UI label for
+  passing that heuristic, not a claim of zero loss or unchanged model quality.
+  AUTOGRID recommends the smallest `k` passing the selected threshold.
 - 🔵 **TERNARY** — a tensor whose *values* are already on the `{−1,0,+1}×scale`
   grid (e.g. a placed/quantized weight). AUTOGRID analyzes its **group scales**
   for digit-stack conversion instead.
-- 🔴 **STEER** — error is still above the floor even at k=8. This tensor needs a
-  real correction pipeline (rotation / Hessian-aware placement / reconstruction),
-  **not** a numeral-system change. **AUTOGRID refuses to touch it.**
+- 🔴 **STEER** — no scanned k passes the threshold. A different placement or
+  correction pipeline may be appropriate; this label alone is not a model-level
+  verdict. The default automatic selection excludes these entries.
 
 Then **CONVERT** applies the recommended `k` per tensor, **in place**, with the
 originals backed up to one file first — every patch is byte-length-guarded and
@@ -157,14 +158,13 @@ originals backed up to one file first — every patch is byte-length-guarded and
 
 ### The `max k` dial = the two regimes
 
-- **k = 8 … 3** — the *free zone*. Convert to integer with no measurable quality
-  cost. You get integer arithmetic and bit-exact reproducibility; the model is
-  the **same size** (this is conversion, not compression).
-- **k = 2 … 1** — the *compression regime* (2–4 bits/value). Here naive
-  conversion **collapses** — this is where quantization lives, and where a
-  steered pipeline (not AUTOGRID) is required. Set `max k` to 2 and watch the
-  weight matrices flip to 🔴 STEER: that's the app telling you the truth about
-  where "free" ends and "earned" begins.
+- **Higher k** gives a finer grid and may pass the chosen reconstruction-error
+  threshold. It does not prove quality preservation or integer-only execution.
+- **Lower k** gives fewer code levels. It can reduce a packed representation's
+  code payload, but the final bytes depend on scales, groups, packing and retained
+  tensors. The legacy in-place rewrite keeps the source storage widths.
+- Inspect the actual per-tensor result and validate the converted model. There
+  is no universal k boundary guaranteeing either success or collapse.
 
 ---
 
@@ -284,26 +284,30 @@ bits, the ideal density is:
 ideal bpw = 1.6 * k + s / g
 ```
 
-The app also reports finite byte-payload bpw, which includes packed trit bytes,
-scale-stream padding, and residual planes. The remembered S12 choices are
+The density planner also reports a finite byte-payload estimate under its own
+stream and scale-bit assumptions, including optional residual planes. It does
+not include every converter's group padding, native-width codes, scale anchors
+or file metadata. The remembered S12 choices are
 visible as presets: `k1-g20-s12` is 2.2 ideal bpw and `k1-g15-s12` is 2.4 ideal
-bpw. The exact finite payload can be slightly higher when a tensor has an odd
-number of scale codes or an incomplete group.
+bpw. For an exact artifact count, use the writer-specific formulas in the
+paper and count the files actually written; the planner is not a universal
+serialized-byte measurement.
 
 Mixture recipes export as `tkintegers-mixture-v1` JSON and can assign a
 different k, scale density, scale precision, and residual to each model part.
 
 ---
 
-## Why "integer, not smaller" is worth wanting
+## What integer storage establishes
 
-- **Integer arithmetic** end-to-end where it matters — no float in the values.
-- **Bit-exact reproducibility** — integer values don't drift across machines.
-- **A principled starting point for compression.** Once a model is on the integer
-  ladder, dropping digit planes (k8 → … → k1) is a clean, exactly-known descent,
-  and the dropped planes are themselves ternary corrections. AUTOGRID is the
-  *front door*; the compression regime below k3 is where a steered pipeline
-  takes over.
+- **Explicit stored values.** Integer codes and their matching metadata define
+  a representation. They do not by themselves define the runtime arithmetic.
+- **Checkable decoding.** Valid packed integer codes should round-trip with the
+  matching decoder. That differs from recovering arbitrary source floats or
+  obtaining identical cross-device model outputs.
+- **A precision ladder.** Trit depth, scale precision and group geometry allow
+  different representation choices. Lower precision still requires measured
+  evaluation; the codec alone does not establish quality or speed gains.
 
 ---
 
@@ -311,7 +315,9 @@ different k, scale density, scale precision, and residual to each model part.
 
 AUTOGRID is the noise-floor auto-detector from **TAARDIS** (*Ternary Adaptive
 Alignment & Rotation for Dense Integer Stacking*) — a pipeline for full-ternary,
-fully-integer large language models. The digit-ladder math and the noise-floor
-principle are validated there at 27B scale.
+low-bit large language models. Forge's separate historical methods and runs are
+not automatically results of this standalone application. The desktop app and
+embedded Atlas are included here; numerical codec/model validation and packed
+runtime integration remain separate work, as documented in the paper.
 
 MIT licensed. By Cody Dixon, 2026.

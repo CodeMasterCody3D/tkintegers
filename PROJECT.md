@@ -6,7 +6,9 @@ formats. The density planner is secondary to model conversion.
 
 ## Owner decisions
 1. Preserve the existing container code and source models.
-2. Keep the standalone repository private; baseline is saved at commit fc13169.
+2. Preserve repository visibility unless Cody explicitly requests a change.
+   The earlier private-repository instruction is historical: GitHub reports the
+   standalone repository public as of October 23. Baseline fc13169 remains saved.
 3. Use a futuristic charcoal/grey desktop theme with cyan highlights and clear explanations.
 4. Model Atlas means the **whole original HTML UI embedded as a tab**: diagrams,
    explanations, model selection, planning and original controls. Do not replace
@@ -48,9 +50,17 @@ Output is a custom packed container with a manifest, not a standard HF model.
 - Previous UI bytes are archived in `code_vault/` before editing.
 
 ## Technical paper
-`docs/TKINTEGERS_AUTOGRID_PAPER.md` is the completed version-1.0 implementation
+`docs/TKINTEGERS_AUTOGRID_PAPER.md` is the version-1.1 implementation
 and analytical paper, based on app commit `4e3d916`. It separates the actual
 packing layouts and scale policies, covers Model Atlas and carried residuals,
 and includes verified related work. `docs/PAPER_EVIDENCE.md` and `docs/evidence/`
 retain the bounded checks. Do not turn its calculated byte counts or UI tests
 into claims about model quality, inference speed or training memory.
+
+Section 10 distinguishes application baseline `4e3d916` from reproduction
+snapshot `cb8ffdc`, which includes the accounting script and evidence. The actual
+Tkinter desktop application, converter and embedded Atlas host are in that
+snapshot. The planned browser demo at `ai.internectual.net` belongs to the separate
+`internectual-labs` GitHub Pages repository (main branch, root); do not confuse
+that planned hosting with the included desktop app or claim a live demo URL
+before checking it.

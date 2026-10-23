@@ -1,8 +1,10 @@
 # Evidence and citation record for the Tk-Integers technical paper
 
-Date: October 8, 2026.
+Original evidence: October 8, 2026. Documentation correction and recheck:
+October 23, 2026 (paper version 1.1).
 Paper: [Tk-Integers: Explicit Base-3 Containers and Model-Aware Quantization Recipes](TKINTEGERS_AUTOGRID_PAPER.md).
 Audited application: `4e3d91628302586c7a94d994641b391d656826c4`.
+Public reproduction snapshot: `cb8ffdc7a6b5ddbd119408f15471113c4bc5396a`.
 
 ## Claim scope
 
@@ -127,3 +129,61 @@ job, training or numerical quantization run was launched for this paper.
 - Added the literal HTML integration and saved-file review handoff.
 - Added verified related work, bounded verification evidence and a reproducible
   model-evaluation protocol without inventing results.
+
+## October 23 correction and fresh reproduction
+
+The requested review found no incorrect equation or worked storage example in
+the 19-equation paper. Its core analytical results are unchanged. Version 1.1
+corrects the following documentation issues without changing application code:
+
+- Section 10 now distinguishes the application revision from the reproduction
+  snapshot. The former does not contain `docs/verify_paper_accounting.py`; the
+  latter includes that script, the original paper and retained evidence.
+- References identify the standalone repository as public and provide its pinned
+  vendored Atlas files as an accessible alternative to the private upstream.
+- Section 4.3 explicitly specifies nonnegative ternary-linear scale codes and
+  nearest-even rounding for the described `torch.round` paths.
+- Section 7.1 identifies the residual conservation identity as real-arithmetic
+  analysis, not bit-exact conservation through floating-point operations.
+- The README removes unsupported lossless/free-conversion and integer-runtime
+  claims and qualifies the planner's byte estimate. No historical Forge model
+  result is transferred to this standalone converter.
+
+**Fresh Section 10 validation:** cloned the public repository into a separate
+clean directory, checked out `cb8ffdc7a6b5ddbd119408f15471113c4bc5396a`, and ran
+the literal Section 10.2 shell block extracted from the revised manuscript.
+Python/Node prerequisite checks and scalar accounting assertions passed; all
+eight recipe tests and all 18 architecture tests passed, with zero skips.
+These checks use scalar arithmetic and static metadata, not numeric model
+execution. The clean checkout remained unchanged.
+
+The fresh checkout contains the actual desktop entry point, converter, both
+embedded-Atlas host modules, complete vendored HTML assets and requirements.
+Application code is identical between the two pinned revisions. Their Python
+source additions are documentation artifacts: the accounting script and the
+recorded historical UI harness. An initial review-harness assertion incorrectly
+expected only the accounting script; it was corrected to include the recorded
+UI harness as well. No application fix was required.
+
+All 19 equation labels remain sequential and Markdown file-link targets exist.
+The earlier October 23 review also matched all ten bundled configuration JSONs
+to their pinned official files and rechecked the five external primary sources.
+The first desktop metadata run lacked Node (six recipe passes, two skips); that
+partial run is not cited as full coverage. The later complete checks above had
+Node available and no skips. No fresh GUI interaction, tensor codec numerical
+round-trip, model conversion, quality, memory, speed or convergence test was
+performed. The numerical limitations remain unchanged.
+
+Local audit receipts, not required to run the published commands:
+`/home/cody/tkintegers-paper-audit-1023-2026/section10-validation.json`,
+`checks-summary.json`, `config-provenance-check.json` and `findings.json`.
+The last file records pre-correction findings; this section records their
+documentation resolution. Reproduction uses the public pinned source and does
+not depend on those machine-local paths.
+
+The website demo is separate from the included desktop build. The inspected
+GitHub Pages source is `CodeMasterCody3D/internectual-labs`, branch `main`, root,
+with CNAME `ai.internectual.net`. No website edit or Atlas demo deployment is
+claimed here. Publication of the version 1.1 documentation was separately
+authorized after verification. It does not include a website deployment,
+application-code change or repository-visibility change.
