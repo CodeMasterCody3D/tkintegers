@@ -1,5 +1,7 @@
 # Tk-Integers
 
+**TK stands for Ternary Kluster** — the name behind **TKintegers**.
+
 A desktop safetensors converter with selectable weight/scale formats and the
 original Model Atlas HTML interface embedded in a tab. Built on Autogrid.
 
