@@ -1,0 +1,22 @@
+{
+  "scope": "Focused publication of unchanged measured kernel sources; no model artifacts or private run cards",
+  "model_tested": "Qwen/Qwen2.5-0.5B-Instruct",
+  "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "format_tested": "tk_k5_g128_ISk10log",
+  "selected_native_mode": 0,
+  "execution": "FP16 operands, FP32 accumulation and group scaling",
+  "source_sha256": {
+    "k5_group_cuda.cu": "051fbefbf5add3d75f43cbebb2f743334f0f113c0177ca03c066ebf2ff9a11ef",
+    "k5_prefill_cuda.py": "5bb3e3ed5fb3a625eb0a3c0c2ee51ce533d62e9d538031392effd7c671f003a7",
+    "k5_prefill_cuda_l4.py": "9bce2b0514265088e2c9b13f5d468193ee71e4da8274ea8f7d46e5dec3b02f8d",
+    "k5_prefill_tiled.py": "428cab5e6250598934202e4345754c3032d50c8774f403c892c638dab09c54f8",
+    "gemv_reference.py": "dc5bf77f7969954d72feb68deffcfd2f600343d98ce84cafbfa70780f03911e7"
+  },
+  "limitations": [
+    "Original environment guards retained: Kaggle T4/sm75 or Colab L4/sm89",
+    "Original decoder unchanged; native speed improvement concerns prefill",
+    "No claim of Qwen 27B integration or measured task-quality equivalence",
+    "Experimental direct INT8 activation mode did not pass the numerical gate",
+    "Private evidence remains separate; source publication is not a new benchmark"
+  ]
+}

@@ -11,6 +11,11 @@ Model Atlas integration, related work and [recorded verification evidence](docs/
 
 ## Quick install and launch
 
+For the opt-in GPU inference kernels, see [Native k5 kernels](benchmarks/KERNELS.md).
+The faster CUDA prefill implementation, its T4/L4 adapters, and the preserved
+Triton decoder are included. These are low-level runtime modules, not an
+automatic converter or desktop-runtime replacement.
+
 **Supported full desktop setup:** Ubuntu 24.04+, Debian 12+, or KDE neon with an
 X11 desktop or XWayland. Use the distribution's **Python 3.10+**, **Node.js 18+**,
 Tkinter, and Qt5 WebEngine. The embedded Atlas tab currently requires X11/XWayland.
