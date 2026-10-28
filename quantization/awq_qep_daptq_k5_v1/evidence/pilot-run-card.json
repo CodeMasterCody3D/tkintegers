@@ -1,0 +1,445 @@
+{
+  "run_id": "qwen35-9b-awq-qep-daptq2-placement-0144pm-1028-2026",
+  "phase": "pilot",
+  "status": "pilot_complete",
+  "started": "2026-10-28T18:48:57.644225+00:00",
+  "model": "Qwen/Qwen3.5-9B",
+  "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+  "format": "tk_k5_g128_ISk10log",
+  "contract": {
+    "run_id": "qwen35-9b-awq-qep-daptq2-placement-0144pm-1028-2026",
+    "model": "Qwen/Qwen3.5-9B",
+    "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+    "format": "tk_k5_g128_ISk10log",
+    "group_size": 128,
+    "qep_alpha": 0.5,
+    "daptq_rounds": 2,
+    "code_polish_steps_per_round": 10,
+    "awq_grid_points": 20,
+    "damping": 0.01,
+    "calibration_sha256": "18957158c789b2a06e2f22f2793d0dfce551c0a87d525500f2c1ddf07286f99e",
+    "calibration_count": 16,
+    "question_ids": [
+      "HumanEval/127"
+    ],
+    "seed": 196084012,
+    "original_answers_sha256": "67f42e05c54a24ab61aa9aab952efa142ecc28ea3bfed6d9cfb23efe579b8927",
+    "tasks_sha256": "f2ba8502ee2e807d0fe15e4665091b90621c7c5cb3e2a9415c828fc8a0f3c461",
+    "parent_source_lock": {
+      "benchmarks/quality9_runtime.py": "f63a09bfb406be501b462f1e428a26da13d39fab54842d091f9e5fe9cc22d816",
+      "benchmarks/quality9_tasks.py": "6959ecc253bf822b2fea5f4e5694a4fcfb418e29242baa020bc120de9629a5da",
+      "benchmarks/quality9_eval.py": "ae684aa6bb861e04560b4afabc1d56eb1e50382f6cbcd9630a7186a980ee56f9",
+      "benchmarks/quality9_parse.py": "a99a69241bfb717a4d0491948d4b8646c19fe738e0f55b847742eebcd739a27e",
+      "benchmarks/quality9_driver.py": "f1d8ecc2f6584104309e8ed58a6f46ff8844d38bfd7a647fc0c00f2db24eff2d",
+      "benchmarks/k5_manifest_runtime.py": "8484dedaf61ec7305ed9af0889851c4ba284a53c05e933eaf92e7229830d8b12",
+      "benchmarks/fp8_torchao_runtime.py": "66124a295457a2bfd38137cac057f1cd72aa6d85522a2cbc0e88d0670b401cfd",
+      "benchmarks/k5_prefill_cuda_l4.py": "9bce2b0514265088e2c9b13f5d468193ee71e4da8274ea8f7d46e5dec3b02f8d",
+      "benchmarks/k5_prefill_tiled.py": "428cab5e6250598934202e4345754c3032d50c8774f403c892c638dab09c54f8",
+      "benchmarks/gemv_reference.py": "dc5bf77f7969954d72feb68deffcfd2f600343d98ce84cafbfa70780f03911e7",
+      "benchmarks/k5_group_cuda.cu": "051fbefbf5add3d75f43cbebb2f743334f0f113c0177ca03c066ebf2ff9a11ef",
+      "benchmarks/run_quality9.sh": "a86e979b946cf7a524d2939d0f2d394fd3c5bcfdab65239e329363eeb8923fc3",
+      "tkintegers_convert.py": "c440a6f0649cd688831027ac1c04e991e2d9d3e65b6bb7e448a8866daf50546c",
+      "tkintegers.py": "83cbda36ffdddc78cd6629c3ec12afbcac268556d42fb6a1f8ea2c3a6c33efbc",
+      "tk_codec.py": "fd29420a900a964ed10fe5686a24f481b9fae84ce341a7463c7a5d856c1fdf75",
+      "base3_pack.py": "ea8a745185a5bdc22c368683fd7edcea06a6ab813af26c01d87f77499994f70c",
+      "tk_s12.py": "9795e5163b3acc9fd0ed08b23f9f17348c1fcf6c34c76d545f950fb3dcdcbb30",
+      "model_params.py": "e01fb77acfcc5ed707fa2274e2b524c294241d76e37b4df9723e3c2c3c45d2ef",
+      "scaleq_traces_08b.py": "9064b54c70f187b22d5b9fc90f4a8de14f0c31fc95e857e92efe7dd6e9f3df26",
+      "setup_engine.py": "007379bd3fdfc193ac835ba83fc3fa6d8ef39699bd654fb8cfc2173cbad01c7e",
+      "docs/model_params.json": "fb3e17623f89ca26e7a0ba118a8f5fbd02d9bced8544b55786af382a7724b5fb",
+      "tasks-15.jsonl": "f2ba8502ee2e807d0fe15e4665091b90621c7c5cb3e2a9415c828fc8a0f3c461",
+      "selection-15.json": "2a57ccaa5699a31c09fe11b4c63fff8a4f563c46a48d44829e770daf98dd3d46",
+      "resume-window.json": "3f258292b81b95f3998142a9c8b8c1e1b3e5beb8deef2c6bb657731385a81c01"
+    },
+    "new_source_lock": {
+      "quality9_awq_qep_daptq.py": "54dd210d239d443f5238dc49c877985233b1ce0d9257ca19c9fdba63c519196f",
+      "quality9_k5_daptq.py": "0db65d5c87d949a678b1eddab8ce7757261cba5e2f16b059240c661b40890d15",
+      "quality9_combined_calibration.py": "288e268d1734669f4e9ad831699664d1f8c109b5d8bab5f0b564bc53e6165ce5",
+      "carry_stream.py": "7619901956ab7da31733b8ab250cf4fede7180de844bcdef26cf87f4823869bf",
+      "sbr_examples.py": "c659fb398d34711cbefb21d13e92796dea44522ea20c66784cfbe774cf2b59ef",
+      "hess_bundle.py": "5681eafcead99a320c1eee1165d9b158856c1524d1db3fb59aa2955ec58d65e1"
+    },
+    "source_vaults": {
+      "quality9_awq_qep_daptq.py": {
+        "source": "/home/cody/tkintegers/benchmarks/quality9_awq_qep_daptq.py",
+        "vault": "/home/cody/tkintegers/code_vault/quality9_awq_qep_daptq.261028-134404.90bd197f.py",
+        "md5": "90bd197f2c90746a4936b756fd7bfb46",
+        "sha256": "54dd210d239d443f5238dc49c877985233b1ce0d9257ca19c9fdba63c519196f"
+      },
+      "quality9_k5_daptq.py": {
+        "source": "/home/cody/tkintegers/benchmarks/quality9_k5_daptq.py",
+        "vault": "/home/cody/tkintegers/code_vault/quality9_k5_daptq.261028-133138.06a377a2.py",
+        "md5": "06a377a2737c861f51cc62580ae002a9",
+        "sha256": "0db65d5c87d949a678b1eddab8ce7757261cba5e2f16b059240c661b40890d15"
+      },
+      "quality9_combined_calibration.py": {
+        "source": "/home/cody/tkintegers/benchmarks/quality9_combined_calibration.py",
+        "vault": "/home/cody/tkintegers/code_vault/quality9_combined_calibration.261028-133138.601f5d8a.py",
+        "md5": "601f5d8ab0569201de1f88fe9e1f4090",
+        "sha256": "288e268d1734669f4e9ad831699664d1f8c109b5d8bab5f0b564bc53e6165ce5"
+      },
+      "carry_stream.py": {
+        "source": "/home/cody/onebit-forge/carry_stream.py",
+        "vault": "/home/cody/tkintegers/code_vault/carry_stream.261028-133138.4c55c3e4.py",
+        "md5": "4c55c3e4aa0848135d01ced11d0e0c61",
+        "sha256": "7619901956ab7da31733b8ab250cf4fede7180de844bcdef26cf87f4823869bf"
+      },
+      "sbr_examples.py": {
+        "source": "/home/cody/onebit-forge/sbr_examples.py",
+        "vault": "/home/cody/tkintegers/code_vault/sbr_examples.261028-133138.c53ca97c.py",
+        "md5": "c53ca97ced64ef3c04d8d6c67918fc03",
+        "sha256": "c659fb398d34711cbefb21d13e92796dea44522ea20c66784cfbe774cf2b59ef"
+      },
+      "hess_bundle.py": {
+        "source": "/home/cody/onebit-forge/vmkit/hess_bundle.py",
+        "vault": "/home/cody/tkintegers/code_vault/hess_bundle.261028-133138.cf30b15a.py",
+        "md5": "cf30b15a5c05c45ae2fab5f4c934e9f5",
+        "sha256": "5681eafcead99a320c1eee1165d9b158856c1524d1db3fb59aa2955ec58d65e1"
+      }
+    },
+    "private_hessian_repo": "CodeMasterCody3D/tkintegers-9b-awq-qep-daptq-1028",
+    "authority": "Explicit combined-method authorization and explicit question-tool selection of16goldtrain examples, alpha0.5 and2rounds/10steps. Pilot first; hours-long projection requires decision. GRIP stays closed.",
+    "upstream_awq": "https://github.com/mit-han-lab/llm-awq/blob/d6e797a42b9ef7778de8ee2352116e0f48a78d61/awq/quantize/auto_scale.py",
+    "awq_scope": "Activation-mean exponent search, linear-output objective, actual K5 kernel. Shared input/post-attention zero-centered norm folds plus MLP up/down fold. No extra runtime scale tensors or clipping sweep.",
+    "qep_source": "onebit-forge/ternary_gptq.py::_qep_iter",
+    "daptq_source": "onebit-forge/ternary_gptq.py::joint_scale_solve_, _flip_polish_incremental_; generalizedK5alphabet and actualinteger-scale gate. Same joint normal system, activation-factor implementation.",
+    "initializer": "Existing pack_k5_hiscale; no independent GPTQ pass.",
+    "storage": "Exactly11097277432weight-filebytes; every matrix shape/code/scalemetadata layoutunchanged; only64eligible normalizationvectors may differ among retained tensors.",
+    "parent_failed_run_id": "qwen35-9b-awq-qep-daptq1-placement-0131pm-1028-2026",
+    "retry_reason": "Restore original serialized scale shape; exact-byte limit remains. Quantization equations/settings are unchanged. r1sourceandartifacts retained.",
+    "failed_source_archive_sha256": "9e9884dc05febbf8c91f2291b57346ebe86f71a2c31e8cbbe263b9ae999b365a"
+  },
+  "uptime_seconds": 56681.9,
+  "gpu": "NVIDIA L4",
+  "calibration_tokens": 3102,
+  "calibration_context": "Complete examples, 256-token carried chunks, padding excluded from every statistic",
+  "scope": "Single combined candidate; same original interval question only",
+  "blocks": [
+    {
+      "block": 0,
+      "awq": [
+        {
+          "previous": "input_layernorm",
+          "consumers": [
+            "linear_attn.in_proj_qkv",
+            "linear_attn.in_proj_z",
+            "linear_attn.in_proj_b",
+            "linear_attn.in_proj_a"
+          ],
+          "loss": 1821.0318542437378,
+          "ratio": 0.25,
+          "minimum_scaling": 0.6134388446807861,
+          "maximum_scaling": 1.630217432975769,
+          "zero_centered_norm": true
+        },
+        {
+          "previous": "post_attention_layernorm",
+          "consumers": [
+            "mlp.gate_proj",
+            "mlp.up_proj"
+          ],
+          "loss": 25.520356452597603,
+          "ratio": 0.25,
+          "minimum_scaling": 0.710201621055603,
+          "maximum_scaling": 1.4078670740127563,
+          "zero_centered_norm": true
+        },
+        {
+          "previous": "mlp.up_proj",
+          "consumers": [
+            "mlp.down_proj"
+          ],
+          "loss": 0.07425110059775264,
+          "ratio": 0.35,
+          "minimum_scaling": 0.557100236415863,
+          "maximum_scaling": 1.7950090169906616,
+          "zero_centered_norm": false
+        }
+      ],
+      "folded_block_relative_l2": 0.0003160222840961069,
+      "linears": [
+        {
+          "name": "model.layers.0.linear_attn.in_proj_qkv.weight",
+          "qep_relative_weight_change": 0.0024446931201964617,
+          "seconds": 2.0401909739957773,
+          "energy_start": 0.3695826970631207,
+          "energy_final": 0.10981570635505525,
+          "rounds": [
+            {
+              "round": 1,
+              "start": 0.3695826970631207,
+              "scale_trial": 0.2546072776680873,
+              "scale_kept": true,
+              "code_trial": 0.15764351007297733,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 81920,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 0.15764351007297733
+            },
+            {
+              "round": 2,
+              "start": 0.15764351007297733,
+              "scale_trial": 0.1478684567662325,
+              "scale_kept": true,
+              "code_trial": 0.10981570635505525,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 81920,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 0.10981570635505525
+            }
+          ],
+          "objective": "QEP target versus decoded stored K5 grid on all real calibration tokens",
+          "initializer": "Unchanged pack_k5_hiscale; no additional quantizer sweep"
+        },
+        {
+          "name": "model.layers.0.linear_attn.in_proj_z.weight",
+          "qep_relative_weight_change": 0.003354511922225356,
+          "seconds": 0.990555869997479,
+          "energy_start": 0.20072380408103066,
+          "energy_final": 0.059850675910746706,
+          "rounds": [
+            {
+              "round": 1,
+              "start": 0.20072380408103066,
+              "scale_trial": 0.1382567192659229,
+              "scale_kept": true,
+              "code_trial": 0.08576398203639957,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 40960,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 0.08576398203639957
+            },
+            {
+              "round": 2,
+              "start": 0.08576398203639957,
+              "scale_trial": 0.08053795374843196,
+              "scale_kept": true,
+              "code_trial": 0.059850675910746706,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 40960,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 0.059850675910746706
+            }
+          ],
+          "objective": "QEP target versus decoded stored K5 grid on all real calibration tokens",
+          "initializer": "Unchanged pack_k5_hiscale; no additional quantizer sweep"
+        },
+        {
+          "name": "model.layers.0.linear_attn.in_proj_b.weight",
+          "qep_relative_weight_change": 0.0028595777694135904,
+          "seconds": 0.04309137599921087,
+          "energy_start": 0.00045930221567924495,
+          "energy_final": 0.00012718032553635475,
+          "rounds": [
+            {
+              "round": 1,
+              "start": 0.00045930221567924495,
+              "scale_trial": 0.0002948019909243095,
+              "scale_kept": true,
+              "code_trial": 0.00018259777818287036,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 320,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 0.00018259777818287036
+            },
+            {
+              "round": 2,
+              "start": 0.00018259777818287036,
+              "scale_trial": 0.0001724919821388217,
+              "scale_kept": true,
+              "code_trial": 0.00012718032553635475,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 320,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 0.00012718032553635475
+            }
+          ],
+          "objective": "QEP target versus decoded stored K5 grid on all real calibration tokens",
+          "initializer": "Unchanged pack_k5_hiscale; no additional quantizer sweep"
+        },
+        {
+          "name": "model.layers.0.linear_attn.in_proj_a.weight",
+          "qep_relative_weight_change": 0.0024542142637073994,
+          "seconds": 0.03458372699969914,
+          "energy_start": 0.0026798225713235073,
+          "energy_final": 0.0008091172341186947,
+          "rounds": [
+            {
+              "round": 1,
+              "start": 0.0026798225713235073,
+              "scale_trial": 0.0018467599530630297,
+              "scale_kept": true,
+              "code_trial": 0.0011463256266330123,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 320,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 0.0011463256266330123
+            },
+            {
+              "round": 2,
+              "start": 0.0011463256266330123,
+              "scale_trial": 0.0010786469952652237,
+              "scale_kept": true,
+              "code_trial": 0.0008091172341186947,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 320,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 0.0008091172341186947
+            }
+          ],
+          "objective": "QEP target versus decoded stored K5 grid on all real calibration tokens",
+          "initializer": "Unchanged pack_k5_hiscale; no additional quantizer sweep"
+        },
+        {
+          "name": "model.layers.0.linear_attn.out_proj.weight",
+          "qep_relative_weight_change": 0.001003217650577426,
+          "seconds": 1.0926859589962987,
+          "energy_start": 0.0008849681371849724,
+          "energy_final": 5.028658119455934e-05,
+          "rounds": [
+            {
+              "round": 1,
+              "start": 0.0008849681371849724,
+              "scale_trial": 0.00014333181865616666,
+              "scale_kept": true,
+              "code_trial": 8.061973210978363e-05,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 40960,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 8.061973210978363e-05
+            },
+            {
+              "round": 2,
+              "start": 8.061973210978363e-05,
+              "scale_trial": 6.924707052593969e-05,
+              "scale_kept": true,
+              "code_trial": 5.028658119455934e-05,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 40960,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 5.028658119455934e-05
+            }
+          ],
+          "objective": "QEP target versus decoded stored K5 grid on all real calibration tokens",
+          "initializer": "Unchanged pack_k5_hiscale; no additional quantizer sweep"
+        },
+        {
+          "name": "model.layers.0.mlp.gate_proj.weight",
+          "qep_relative_weight_change": 0.00666020018979907,
+          "seconds": 3.1778833130010753,
+          "energy_start": 0.004460694331261928,
+          "energy_final": 0.0017809744343567626,
+          "rounds": [
+            {
+              "round": 1,
+              "start": 0.004460694331261928,
+              "scale_trial": 0.0034529119960037187,
+              "scale_kept": true,
+              "code_trial": 0.002356619575965803,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 122880,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 0.002356619575965803
+            },
+            {
+              "round": 2,
+              "start": 0.002356619575965803,
+              "scale_trial": 0.002242028059624436,
+              "scale_kept": true,
+              "code_trial": 0.0017809744343567626,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 122880,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 0.0017809744343567626
+            }
+          ],
+          "objective": "QEP target versus decoded stored K5 grid on all real calibration tokens",
+          "initializer": "Unchanged pack_k5_hiscale; no additional quantizer sweep"
+        },
+        {
+          "name": "model.layers.0.mlp.up_proj.weight",
+          "qep_relative_weight_change": 0.0064271967858076096,
+          "seconds": 3.1382654789995286,
+          "energy_start": 0.007806910326532666,
+          "energy_final": 0.0031234806180359064,
+          "rounds": [
+            {
+              "round": 1,
+              "start": 0.007806910326532666,
+              "scale_trial": 0.006079078321645494,
+              "scale_kept": true,
+              "code_trial": 0.004139102753265835,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 122880,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 0.004139102753265835
+            },
+            {
+              "round": 2,
+              "start": 0.004139102753265835,
+              "scale_trial": 0.003934440020117838,
+              "scale_kept": true,
+              "code_trial": 0.0031234806180359064,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 122880,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 0.0031234806180359064
+            }
+          ],
+          "objective": "QEP target versus decoded stored K5 grid on all real calibration tokens",
+          "initializer": "Unchanged pack_k5_hiscale; no additional quantizer sweep"
+        },
+        {
+          "name": "model.layers.0.mlp.down_proj.weight",
+          "qep_relative_weight_change": 0.003327735234051943,
+          "seconds": 3.3846436540043214,
+          "energy_start": 2.382159216422897e-05,
+          "energy_final": 9.134042871998165e-06,
+          "rounds": [
+            {
+              "round": 1,
+              "start": 2.382159216422897e-05,
+              "scale_trial": 1.4874421982206238e-05,
+              "scale_kept": true,
+              "code_trial": 1.1535251823286474e-05,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 40960,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 1.1535251823286474e-05
+            },
+            {
+              "round": 2,
+              "start": 1.1535251823286474e-05,
+              "scale_trial": 1.092163413233462e-05,
+              "scale_kept": true,
+              "code_trial": 9.134042871998165e-06,
+              "codes_kept": true,
+              "proposed_coordinate_moves": 40960,
+              "scale_solve_double_fallback_rows": 0,
+              "end": 9.134042871998165e-06
+            }
+          ],
+          "objective": "QEP target versus decoded stored K5 grid on all real calibration tokens",
+          "initializer": "Unchanged pack_k5_hiscale; no additional quantizer sweep"
+        }
+      ],
+      "native_kernels": [
+        "chunk_gated_delta_rule_fwd_kernel_h_blockdim64",
+        "chunk_gated_delta_rule_fwd_kkt_solve_kernel",
+        "void causal_conv1d_channellast_fwd_kernel<Causal_conv1d_channellast_fwd_kernel_traits<128, 4, 64, true, c10::Half, c10::Half>, false>(ConvParamsBase)",
+        "void causal_conv1d_fwd_kernel<Causal_conv1d_fwd_kernel_traits<128, 4, false, c10::Half, c10::Half> >(ConvParamsBase)",
+        "void k5_group_cuda<0>(signed char const*, short const*, __half const*, __half*, int, int, int, int, int, int, float, float, int, int)"
+      ],
+      "seconds": 30.444174188000034,
+      "native_counts": {
+        "decode_gemv": 0,
+        "multirow_gemm": 2252,
+        "embedding_rows": 0,
+        "dense_linear_fallback": 0
+      }
+    }
+  ],
+  "projected_conversion_seconds": 974.2135740160011,
+  "projection_caveat": "First DeltaNet block only; attention blocks and later propagated error may differ. Save/upload/load/answer time is additional.",
+  "finished": "2026-10-28T18:49:35.059593+00:00"
+}

@@ -1,0 +1,86 @@
+{
+  "all_16_full_solutions_read": true,
+  "method": "AI-assisted full reading, not a script-only verdict",
+  "rows": [
+    {
+      "id": "gsm8k/train/3612",
+      "accepted": true,
+      "reason": "180 students need36packs at3dollars:108"
+    },
+    {
+      "id": "gsm8k/train/1889",
+      "accepted": true,
+      "reason": "Yearly80+60+30=170; four years680"
+    },
+    {
+      "id": "gsm8k/train/5000",
+      "accepted": true,
+      "reason": "20dollars less10percent=18"
+    },
+    {
+      "id": "gsm8k/train/296",
+      "accepted": true,
+      "reason": "Lose3of24kg:21"
+    },
+    {
+      "id": "gsm8k/train/1796",
+      "accepted": true,
+      "reason": "Five outside fish plus2returned:7"
+    },
+    {
+      "id": "gsm8k/train/4374",
+      "accepted": true,
+      "reason": "60servings at15perjar:4"
+    },
+    {
+      "id": "gsm8k/train/3261",
+      "accepted": true,
+      "reason": "Costs90plusprofit20,22pies:5each"
+    },
+    {
+      "id": "gsm8k/train/4780",
+      "accepted": true,
+      "reason": "35hoursat10 plus40at10.50:770"
+    },
+    {
+      "id": "gsm8k/train/7285",
+      "accepted": true,
+      "reason": "20+40+28=88"
+    },
+    {
+      "id": "gsm8k/train/2934",
+      "accepted": true,
+      "reason": "8plus16additional screws,4piles:6; wording follows intended additional-purchase interpretation"
+    },
+    {
+      "id": "gsm8k/train/6245",
+      "accepted": true,
+      "reason": "7+35+38=80"
+    },
+    {
+      "id": "gsm8k/train/285",
+      "accepted": true,
+      "reason": "600minutes=10hours over5days:2"
+    },
+    {
+      "id": "gsm8k/train/1483",
+      "accepted": true,
+      "reason": "150minus90,split2parents:30"
+    },
+    {
+      "id": "gsm8k/train/2932",
+      "accepted": true,
+      "reason": "11toolsminus6=5"
+    },
+    {
+      "id": "gsm8k/train/3201",
+      "accepted": true,
+      "reason": "100people times10sheets times16=16000"
+    },
+    {
+      "id": "gsm8k/train/2318",
+      "accepted": true,
+      "reason": "60+180minutes=4hours"
+    }
+  ]
+}

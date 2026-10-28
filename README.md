@@ -9,6 +9,12 @@ original Model Atlas HTML interface embedded in a tab. Built on Autogrid.
 The completed technical report includes exact packing formulas, scale formats,
 Model Atlas integration, related work and [recorded verification evidence](docs/PAPER_EVIDENCE.md).
 
+**Saved quantization method:** [AWQ + QEP + DAPTQ K5, version 1](quantization/awq_qep_daptq_k5_v1/README.md)
+includes the exact tested recipe, frozen implementation and reusable integration
+functions. It passed one matched Qwen3.5-9B question at unchanged saved weight
+size; broader accuracy is unmeasured. See the recipe for its dependencies and
+source-only package verification.
+
 ## Quick install and launch
 
 For the opt-in GPU inference kernels, see [Native k5 kernels](benchmarks/KERNELS.md).

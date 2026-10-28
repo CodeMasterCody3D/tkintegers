@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "method_id": "awq_qep_daptq_k5_v1",
+  "preserved_on": "2026-10-28",
+  "run_id": "qwen35-9b-awq-qep-daptq2-placement-0144pm-1028-2026",
+  "source_archives": {
+    "combined-code-r2.tar.gz": {
+      "bytes": 39224,
+      "sha256": "e2a5f93105da7111477358c537da1d64945802e7f2c73342ef2e6c49ad667257",
+      "location": "Owner home .cache/tk-quality9-1027/combined-code-r2.tar.gz",
+      "included_in_package": false
+    },
+    "code-v6.tar.gz": {
+      "bytes": 55146,
+      "sha256": "0d1a5fde58ce68047d1b858e91b6272de1809a48b6d70fe8d48d5a533e1ceec9",
+      "location": "Owner home .cache/tk-quality9-1027/code-v6.tar.gz",
+      "included_in_package": false
+    }
+  },
+  "frozen_source_note": "reference files are exact copies of the successful r2 packet; do not edit them",
+  "packaging_note": "folding and storage adapters are new source-checked integration interfaces, not a new measured model run",
+  "files": {
+    "README.md": {
+      "bytes": 15552,
+      "sha256": "0f49ca014e456fa7b782f58561103bfcedda94be33e82dfa7b96faa9fe11f640"
+    },
+    "__init__.py": {
+      "bytes": 1564,
+      "sha256": "bc4a6bd7c9202b98aa5b6a2cbca5927ee48e5341ffdd387c0836a48174087051"
+    },
+    "evidence/algebra-check.json": {
+      "bytes": 1158,
+      "sha256": "e171dcdf5414e101bdde844d94955465b8ad0c43c32180ae1ee9f3993027ada2"
+    },
+    "evidence/answer-review.json": {
+      "bytes": 4963,
+      "sha256": "3aa93754012cc95fa741c2ee40e2e7bd088beb670e04fdbbaabad406def3dae1"
+    },
+    "evidence/answers.jsonl": {
+      "bytes": 16188,
+      "sha256": "e9ca146c8b53bf0856847aca5b69ce8b3f41530639bac1d1769d38b520a9555d"
+    },
+    "evidence/calibration.jsonl": {
+      "bytes": 41822,
+      "sha256": "18957158c789b2a06e2f22f2793d0dfce551c0a87d525500f2c1ddf07286f99e"
+    },
+    "evidence/final-bank-verification.json": {
+      "bytes": 2296,
+      "sha256": "519c45601e4a2b67219fa07279ff8aec0450a30ff162db4c2a9fdf61aa7780d6"
+    },
+    "evidence/full-run-card.json": {
+      "bytes": 370752,
+      "sha256": "088998b64b84aa7b9a96f309bbd306543aa3dd4ff9d999521285b6a8ce5f7cf1"
+    },
+    "evidence/pilot-run-card.json": {
+      "bytes": 20990,
+      "sha256": "1e8a80cc5bb0164bfb36d5b5519b08a75fd058347bc661784ec6009ae1da518f"
+    },
+    "evidence/saved-candidate-verification.json": {
+      "bytes": 4448,
+      "sha256": "2594e7b7afd3567ea4b02fffaead5038fb23d65a97624fac0eb7702d59ce01af"
+    },
+    "folding.py": {
+      "bytes": 4469,
+      "sha256": "a747c4ce32b5753ba9c35e247c6fe3db92f782641eb324b32415ee4ac0b78dec"
+    },
+    "recipe.json": {
+      "bytes": 4297,
+      "sha256": "3257b6523ef249dde707f32ccdf76db4d391eea9b836427b07fd68617bcceaab"
+    },
+    "reference/calibration-read-review.json": {
+      "bytes": 2003,
+      "sha256": "686417eb69f8c6f4eb72f90d09295431e7f518fc5225add1b304d28085799952"
+    },
+    "reference/carry_stream.py": {
+      "bytes": 26547,
+      "sha256": "7619901956ab7da31733b8ab250cf4fede7180de844bcdef26cf87f4823869bf"
+    },
+    "reference/contract.json": {
+      "bytes": 7250,
+      "sha256": "66ddc938afbb0f723761e258eec0bc2e87b00a64d26fd639d8e8e7da3bb99de3"
+    },
+    "reference/hess_bundle.py": {
+      "bytes": 7337,
+      "sha256": "5681eafcead99a320c1eee1165d9b158856c1524d1db3fb59aa2955ec58d65e1"
+    },
+    "reference/quality9_awq_qep_daptq.py": {
+      "bytes": 28791,
+      "sha256": "54dd210d239d443f5238dc49c877985233b1ce0d9257ca19c9fdba63c519196f"
+    },
+    "reference/quality9_combined_calibration.py": {
+      "bytes": 4234,
+      "sha256": "288e268d1734669f4e9ad831699664d1f8c109b5d8bab5f0b564bc53e6165ce5"
+    },
+    "reference/quality9_k5_daptq.py": {
+      "bytes": 8785,
+      "sha256": "0db65d5c87d949a678b1eddab8ce7757261cba5e2f16b059240c661b40890d15"
+    },
+    "reference/sbr_examples.py": {
+      "bytes": 32906,
+      "sha256": "c659fb398d34711cbefb21d13e92796dea44522ea20c66784cfbe774cf2b59ef"
+    },
+    "storage.py": {
+      "bytes": 3754,
+      "sha256": "ccbcaf1c7ddcc0fa7ddfa7d3012e66d8a2b6ecc9817ba206350b1ba256ae92af"
+    },
+    "verify.py": {
+      "bytes": 6447,
+      "sha256": "b1eeb78c03570a438c5dfd170b6b353205d30dde454b291c3739d358f5339769"
+    }
+  }
+}

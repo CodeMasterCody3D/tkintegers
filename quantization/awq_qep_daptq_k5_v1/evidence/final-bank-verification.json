@@ -1,0 +1,74 @@
+{
+  "status": "all_final_review_files_independently_verified",
+  "repo": "CodeMasterCody3D/tkintegers-9b-awq-qep-daptq-1028",
+  "revision": "8f9b4a48edb31813acb442caf2a54490afb67d95",
+  "file_count": 13,
+  "total_bytes": 818050,
+  "files": [
+    {
+      "name": "author-review.json",
+      "bytes": 4963,
+      "sha256": "3aa93754012cc95fa741c2ee40e2e7bd088beb670e04fdbbaabad406def3dae1"
+    },
+    {
+      "name": "saved-candidate-verification.json",
+      "bytes": 4448,
+      "sha256": "2594e7b7afd3567ea4b02fffaead5038fb23d65a97624fac0eb7702d59ce01af"
+    },
+    {
+      "name": "hf-backup-verification.json",
+      "bytes": 36137,
+      "sha256": "f4766c2492c5221faa8c1e32ca1163bb813a05e6eca11aadb6df32785f1f6e33"
+    },
+    {
+      "name": "answers.jsonl",
+      "bytes": 16188,
+      "sha256": "e9ca146c8b53bf0856847aca5b69ce8b3f41530639bac1d1769d38b520a9555d"
+    },
+    {
+      "name": "pilot-backup-receipt.json",
+      "bytes": 6709,
+      "sha256": "d987da7a84fac86ee4cc8f04159f78e7a31ea7683b9665d7b9f13e2908908e4d"
+    },
+    {
+      "name": "full-backup-receipt.json",
+      "bytes": 84905,
+      "sha256": "882c69b86155c0f25f9683c1bb597436803e448df9f04cc32dc49245a5fa61be"
+    },
+    {
+      "name": "pilot-run-card.json",
+      "bytes": 20990,
+      "sha256": "1e8a80cc5bb0164bfb36d5b5519b08a75fd058347bc661784ec6009ae1da518f"
+    },
+    {
+      "name": "full-run-card.json",
+      "bytes": 370752,
+      "sha256": "088998b64b84aa7b9a96f309bbd306543aa3dd4ff9d999521285b6a8ce5f7cf1"
+    },
+    {
+      "name": "combined-pilot-r2.log",
+      "bytes": 5772,
+      "sha256": "2801176b405063dd657ed565bdf6f02c802f98db7e05ad59587b0fbbc739cdd0"
+    },
+    {
+      "name": "combined-full-r2.log",
+      "bytes": 99880,
+      "sha256": "df36e46b749f931eb02368cad6c249605cd63a202be4332f5817b154d3f484f3"
+    },
+    {
+      "name": "combined-full-r2-launch.json",
+      "bytes": 214,
+      "sha256": "ab94dad9c296c7946b2cd96e22f1df6d621ec938fe536e2ddfeac026164e44fa"
+    },
+    {
+      "name": "combined-r1-preservation.json",
+      "bytes": 7693,
+      "sha256": "cf1d9050c70faec1f265e9e5cf39eedebc782e550fb2c034a5ac4fc3fffc1a03"
+    },
+    {
+      "name": "layout.json",
+      "bytes": 159399,
+      "sha256": "d607c23e772f410929ffad2cbd33386bbd1b57b1bd5b8ad31524cf525da22cc8"
+    }
+  ]
+}

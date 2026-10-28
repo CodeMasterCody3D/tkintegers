@@ -1,0 +1,35 @@
+{
+  "same_input_qep_exact": true,
+  "scaled_hessian_relative_l2": 1.6489153153997904e-07,
+  "joint_system_relative_l2": 6.774780558771454e-08,
+  "stored_grid_refinement": {
+    "energy_start": 1.3648181973627645e-09,
+    "energy_final": 5.746000632727233e-10,
+    "rounds": [
+      {
+        "round": 1,
+        "start": 1.3648181973627645e-09,
+        "scale_trial": 1.3103669190146821e-09,
+        "scale_kept": true,
+        "code_trial": 6.885887579301111e-10,
+        "codes_kept": true,
+        "proposed_coordinate_moves": 40,
+        "scale_solve_double_fallback_rows": 0,
+        "end": 6.885887579301111e-10
+      },
+      {
+        "round": 2,
+        "start": 6.885887579301111e-10,
+        "scale_trial": 6.574867325345134e-10,
+        "scale_kept": true,
+        "code_trial": 5.746000632727233e-10,
+        "codes_kept": true,
+        "proposed_coordinate_moves": 40,
+        "scale_solve_double_fallback_rows": 0,
+        "end": 5.746000632727233e-10
+      }
+    ],
+    "objective": "QEP target versus decoded stored K5 grid on all real calibration tokens",
+    "initializer": "Unchanged pack_k5_hiscale; no additional quantizer sweep"
+  }
+}
