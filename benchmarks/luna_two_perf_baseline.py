@@ -191,9 +191,11 @@ def warm_case(kernel, args, codes, scales, meta, fixture_bias, batch: int,
               fp16_output: bool = False) -> dict:
     device = codes.device
     x = make_activation(batch, codes.shape[1], device, args.seed, strided=strided)
-    bias = fixture_bias
-    if use_bias and bias is None:
-        bias = torch.zeros(codes.shape[0], device=device, dtype=torch.float16)
+    bias = None
+    if use_bias:
+        bias = fixture_bias
+        if bias is None:
+            bias = torch.zeros(codes.shape[0], device=device, dtype=torch.float16)
     out_dtype = torch.float16 if fp16_output else None
 
     for _ in range(args.warmup):
@@ -282,8 +284,8 @@ def run_parent(args: argparse.Namespace) -> dict:
 
 def main() -> None:
     args = make_parser().parse_args()
-    if args.k % 128:
-        raise SystemExit("--k must be divisible by 128")
+    if args.n < 1 or args.k < 128 or args.k % 128:
+        raise SystemExit("--n must be positive and --k must be at least 128 and divisible by 128")
     if args.warmup < 0 or args.repeats < 1:
         raise SystemExit("--warmup must be nonnegative and --repeats must be positive")
     if args.cold_child is not None:
