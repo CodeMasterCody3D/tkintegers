@@ -1,0 +1,206 @@
+{
+  "scope": "Activation-quantization error only, on saved real 128-row prefill activations and original K5 matrices; FP64 exact reference over ALL output columns. No kernel, speed, model or quality claim.",
+  "gate_relative_l2": 0.005,
+  "cases": {
+    "8192x4096": {
+      "model_occurrences": 32,
+      "activation_stats": {
+        "amax_over_rms_median_p99_max": [
+          4.132507796203931,
+          11.255064582315836,
+          11.291905136130056
+        ],
+        "range_asymmetry_|hi+lo|/(hi-lo)_median_p99": [
+          0.15722062119756644,
+          0.933568322875607
+        ]
+      },
+      "fp16_path_relative_l2": 7.872237850362666e-08,
+      "variants": {
+        "sym_int8_group (prior, 1 dot)": {
+          "relative_l2": 0.00647224322018643,
+          "worst_row_relative_l2": 0.012547607825316297,
+          "passes_gate": false
+        },
+        "affine_int8_group (proposed, 1 dot + rank-1)": {
+          "relative_l2": 0.00382009747162364,
+          "worst_row_relative_l2": 0.005621904817178998,
+          "passes_gate": true
+        },
+        "sym_int8_row (1 dot)": {
+          "relative_l2": 0.02394386128020391,
+          "worst_row_relative_l2": 0.0686271432303045,
+          "passes_gate": false
+        },
+        "e4m3_group (1 FP8 dot)": {
+          "relative_l2": 0.0077382803263512144,
+          "worst_row_relative_l2": 0.013329247271889243,
+          "passes_gate": false
+        },
+        "sym_int8_group + residual (prior, 2 dots)": {
+          "relative_l2": 2.3491889099953792e-05,
+          "worst_row_relative_l2": 3.751594320800326e-05,
+          "passes_gate": true
+        },
+        "e4m3_group + residual (2 FP8 dots)": {
+          "relative_l2": 0.0001768380088356326,
+          "worst_row_relative_l2": 0.0002787317516979732,
+          "passes_gate": true
+        }
+      }
+    },
+    "4096x4096": {
+      "model_occurrences": 56,
+      "activation_stats": {
+        "amax_over_rms_median_p99_max": [
+          4.132507796203931,
+          11.255064582315836,
+          11.291905136130056
+        ],
+        "range_asymmetry_|hi+lo|/(hi-lo)_median_p99": [
+          0.15722062119756644,
+          0.933568322875607
+        ]
+      },
+      "fp16_path_relative_l2": 9.542270556686913e-08,
+      "variants": {
+        "sym_int8_group (prior, 1 dot)": {
+          "relative_l2": 0.007358938214388842,
+          "worst_row_relative_l2": 0.010836956440796191,
+          "passes_gate": false
+        },
+        "affine_int8_group (proposed, 1 dot + rank-1)": {
+          "relative_l2": 0.004558102954940219,
+          "worst_row_relative_l2": 0.005746230457720898,
+          "passes_gate": true
+        },
+        "sym_int8_row (1 dot)": {
+          "relative_l2": 0.025175491192554775,
+          "worst_row_relative_l2": 0.05044448263241584,
+          "passes_gate": false
+        },
+        "e4m3_group (1 FP8 dot)": {
+          "relative_l2": 0.009277710116560289,
+          "worst_row_relative_l2": 0.01734063826785081,
+          "passes_gate": false
+        },
+        "sym_int8_group + residual (prior, 2 dots)": {
+          "relative_l2": 2.834240615088319e-05,
+          "worst_row_relative_l2": 3.997766133687335e-05,
+          "passes_gate": true
+        },
+        "e4m3_group + residual (2 FP8 dots)": {
+          "relative_l2": 0.00021220991757659323,
+          "worst_row_relative_l2": 0.0003955606198615512,
+          "passes_gate": true
+        }
+      }
+    },
+    "12288x4096": {
+      "model_occurrences": 64,
+      "activation_stats": {
+        "amax_over_rms_median_p99_max": [
+          3.9652177588921886,
+          10.270492898704246,
+          10.960375617687774
+        ],
+        "range_asymmetry_|hi+lo|/(hi-lo)_median_p99": [
+          0.167749487583235,
+          0.8031944158808891
+        ]
+      },
+      "fp16_path_relative_l2": 9.373813984320149e-08,
+      "variants": {
+        "sym_int8_group (prior, 1 dot)": {
+          "relative_l2": 0.008843234762313076,
+          "worst_row_relative_l2": 0.017449780098698717,
+          "passes_gate": false
+        },
+        "affine_int8_group (proposed, 1 dot + rank-1)": {
+          "relative_l2": 0.006453333704682564,
+          "worst_row_relative_l2": 0.01060131883693843,
+          "passes_gate": false
+        },
+        "sym_int8_row (1 dot)": {
+          "relative_l2": 0.022814380662519444,
+          "worst_row_relative_l2": 0.05227961396989,
+          "passes_gate": false
+        },
+        "e4m3_group (1 FP8 dot)": {
+          "relative_l2": 0.017956587402297376,
+          "worst_row_relative_l2": 0.021241315813208962,
+          "passes_gate": false
+        },
+        "sym_int8_group + residual (prior, 2 dots)": {
+          "relative_l2": 3.443047726562042e-05,
+          "worst_row_relative_l2": 6.917040579115262e-05,
+          "passes_gate": true
+        },
+        "e4m3_group + residual (2 FP8 dots)": {
+          "relative_l2": 0.00042020749492293464,
+          "worst_row_relative_l2": 0.0005002232704187097,
+          "passes_gate": true
+        }
+      }
+    },
+    "4096x12288": {
+      "model_occurrences": 32,
+      "activation_stats": {
+        "amax_over_rms_median_p99_max": [
+          5.037556583471485,
+          11.087785270896504,
+          11.301598325933053
+        ],
+        "range_asymmetry_|hi+lo|/(hi-lo)_median_p99": [
+          0.21103248079850007,
+          0.8766467254109069
+        ]
+      },
+      "fp16_path_relative_l2": 1.370800947352529e-07,
+      "variants": {
+        "sym_int8_group (prior, 1 dot)": {
+          "relative_l2": 0.01592740350971508,
+          "worst_row_relative_l2": 0.019534715687196,
+          "passes_gate": false
+        },
+        "affine_int8_group (proposed, 1 dot + rank-1)": {
+          "relative_l2": 0.00977080871066056,
+          "worst_row_relative_l2": 0.012266645817452756,
+          "passes_gate": false
+        },
+        "sym_int8_row (1 dot)": {
+          "relative_l2": 0.12528221806263984,
+          "worst_row_relative_l2": 0.16841328559566626,
+          "passes_gate": false
+        },
+        "e4m3_group (1 FP8 dot)": {
+          "relative_l2": 0.011713843717663278,
+          "worst_row_relative_l2": 0.016941117953738104,
+          "passes_gate": false
+        },
+        "sym_int8_group + residual (prior, 2 dots)": {
+          "relative_l2": 6.753417291306636e-05,
+          "worst_row_relative_l2": 8.434773871210366e-05,
+          "passes_gate": true
+        },
+        "e4m3_group + residual (2 FP8 dots)": {
+          "relative_l2": 0.00026086493340490835,
+          "worst_row_relative_l2": 0.0004024704453090397,
+          "passes_gate": true
+        }
+      }
+    }
+  },
+  "all_four_pass": {
+    "sym_int8_group (prior, 1 dot)": false,
+    "affine_int8_group (proposed, 1 dot + rank-1)": false,
+    "sym_int8_row (1 dot)": false,
+    "e4m3_group (1 FP8 dot)": false,
+    "sym_int8_group + residual (prior, 2 dots)": true,
+    "e4m3_group + residual (2 FP8 dots)": true
+  },
+  "seconds": 2.310352087020874,
+  "gpu": "NVIDIA L4",
+  "torch": "2.11.0+cu130",
+  "script_sha256": "6c19fab560c21d18e569fa65e06e770dd1d452a1d9e846ac4a9b8fe5cc7ac46c"
+}

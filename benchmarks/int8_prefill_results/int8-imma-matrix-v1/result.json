@@ -1,0 +1,6097 @@
+{
+  "scope": "Matrix trial (remote L4 only): one-dot INT8 IMMA kernel versus the EXACT preserved swizzle binary and cuBLAS FP8.\n\nCandidate: benchmarks/k5_group_imma_cuda.cu (new). Variant 0 = SUB 32 (m16n8k32),\nvariant 1 = SUB 16 (m16n8k16). Predeclared selection from the three activation\nprobes: SUB 32 for 8192x4096, 4096x4096 and 12288x4096; SUB 16 for 4096x12288.\nBoth variants are measured on every shape for the record.\n\nControl: the preserved swizzle binary (sha f5d15c22...), opened read-only from\nits recorded path; never rebuilt or copied over. Competitor: torch._scaled_mm\nwith E4M3 weights and dynamic per-tensor E4M3 activations (the TorchAO per-tensor\nscheme used in the whole-model comparisons), timed with and without the\nactivation quantization.\n\nPer shape: FP64 exact reference over all columns on the hash-checked real\n9B matrices and saved prefill activations; relative L2 (gate <= 0.005 for the\ncandidate, unchanged), worst row, determinism (two runs byte-equal); then graph\ntiming: 20 calls per graph, 5 replays per sample, 9 rounds in ABCDE/EDCBA order,\nGPU clock and power sampled around every sample. Medians, paired ratios, IQR.\nNothing existing is modified; outputs go to a new directory.\n",
+  "gate_relative_l2": 0.005,
+  "selected_variant": {
+    "12288x4096": "imma_sub32",
+    "8192x4096": "imma_sub32",
+    "4096x4096": "imma_sub32",
+    "4096x12288": "imma_sub16"
+  },
+  "candidate_build": {
+    "source_sha256": "ba45a81b8b77a28b16e34b64dffcc2e34e2193d4f5335fe135d64db5f069dfa4",
+    "so": "/content/tk-speed9-1029/build/imma-sm89-ba45a81b8b77a28b/kernel.so",
+    "so_sha256": "c4dfe5330f3039cda763cb7b7bba7490def129295e08a23ba5c33f0148f4fcf8",
+    "ptx_sha256": "f61c33ef91fa06ca1b5c873c3c3489faa5f1fe138bc3b74ba90d9baab79939a6",
+    "commands": [
+      [
+        "nvcc",
+        "-std=c++17",
+        "-O3",
+        "-arch=sm_89",
+        "--fmad=false",
+        "/content/tk-speed9-1029/k5_group_imma_cuda.cu",
+        "--shared",
+        "-Xcompiler",
+        "-fPIC",
+        "-Xptxas=-v",
+        "-o",
+        "/content/tk-speed9-1029/build/imma-sm89-ba45a81b8b77a28b/kernel.so"
+      ],
+      [
+        "nvcc",
+        "-std=c++17",
+        "-O3",
+        "-arch=sm_89",
+        "--fmad=false",
+        "/content/tk-speed9-1029/k5_group_imma_cuda.cu",
+        "--ptx",
+        "-o",
+        "/content/tk-speed9-1029/build/imma-sm89-ba45a81b8b77a28b/kernel.ptx"
+      ]
+    ],
+    "ptxas": {
+      "_Z18k5_group_imma_cudaILi16EEvPKaPKsS1_PK6float2S3_P6__halfiiiiiffii": {
+        "registers": 128,
+        "spill_stores": 0,
+        "spill_loads": 0
+      },
+      "_Z22k5_quantize_activationILi16EEvPK6__halfPaP6float2iii": {
+        "registers": 40,
+        "spill_stores": 0,
+        "spill_loads": 0
+      },
+      "_Z18k5_group_imma_cudaILi32EEvPKaPKsS1_PK6float2S3_P6__halfiiiiiffii": {
+        "registers": 80,
+        "spill_stores": 0,
+        "spill_loads": 0
+      },
+      "_Z22k5_quantize_activationILi32EEvPK6__halfPaP6float2iii": {
+        "registers": 52,
+        "spill_stores": 0,
+        "spill_loads": 0
+      }
+    },
+    "sass_counts": {
+      "IMMA.16832": 16,
+      "IMMA.16816": 32,
+      "HMMA": 0,
+      "LDSM": 24,
+      "LDG.E.128": 34,
+      "STS.128": 28,
+      "BAR.SYNC": 4,
+      "FFMA": 722,
+      "I2F": 18,
+      "STL": 0,
+      "LDL": 0
+    }
+  },
+  "candidate_resources": {
+    "imma_sub32": {
+      "tile_m": 64,
+      "tile_n": 64,
+      "threads": 256,
+      "shared_bytes": 19712,
+      "registers": 80,
+      "local_bytes": 0,
+      "active_blocks_per_sm": 3,
+      "quantize_registers": 52,
+      "quantize_local_bytes": 0
+    },
+    "imma_sub16": {
+      "tile_m": 64,
+      "tile_n": 64,
+      "threads": 256,
+      "shared_bytes": 22784,
+      "registers": 128,
+      "local_bytes": 0,
+      "active_blocks_per_sm": 2,
+      "quantize_registers": 40,
+      "quantize_local_bytes": 0
+    }
+  },
+  "control": {
+    "so": "/content/tk-speed9-1029/build/shapes-combined-sm89-2f5101721e1bbe17/kernel.so",
+    "resources": [
+      64,
+      64,
+      256,
+      33024,
+      79,
+      0,
+      3
+    ],
+    "selection": {
+      "128:8192:4096": "swizzle64-8warps",
+      "128:4096:4096": "swizzle64-8warps",
+      "128:32:4096": "baseline",
+      "128:12288:4096": "swizzle64-8warps",
+      "128:4096:12288": "swizzle64-8warps",
+      "128:1024:4096": "baseline"
+    }
+  },
+  "torch": "2.11.0+cu130",
+  "gpu": "NVIDIA L4",
+  "cases": {
+    "12288x4096": {
+      "model_occurrences": 64,
+      "selected": "imma_sub32",
+      "accuracy": {
+        "swizzle": {
+          "relative_l2": 0.00020768797101920953,
+          "worst_row_relative_l2": 0.0002205997549845425,
+          "passes_gate": true,
+          "deterministic": true,
+          "finite": true
+        },
+        "imma_sub32": {
+          "relative_l2": 0.004198395412996536,
+          "worst_row_relative_l2": 0.005688245727658033,
+          "passes_gate": true,
+          "deterministic": true,
+          "finite": true
+        },
+        "imma_sub16": {
+          "relative_l2": 0.003355912355589586,
+          "worst_row_relative_l2": 0.0042875727172233934,
+          "passes_gate": true,
+          "deterministic": true,
+          "finite": true
+        },
+        "fp8_full": {
+          "relative_l2": 0.02808008399169671,
+          "worst_row_relative_l2": 0.03209348665483415,
+          "passes_gate": false,
+          "deterministic": true,
+          "finite": true
+        },
+        "fp8_mm": {
+          "relative_l2": 0.02808008399169671,
+          "worst_row_relative_l2": 0.03209348665483415,
+          "passes_gate": false,
+          "deterministic": true,
+          "finite": true
+        }
+      },
+      "fp8": {
+        "scale_shape": [],
+        "weight_scale": 0.0006365180015563965,
+        "use_fast_accum": true,
+        "weight_bytes": 50331648,
+        "activation_fp8_relative_l2_vs_fp64": 0.02808008399169671
+      },
+      "activation_reconstruction": {
+        "sub32": {
+          "activation_relative_l2": 0.0054938292764087565,
+          "max_abs_c": 118.0,
+          "min_a": 0.0005082672578282654
+        },
+        "sub16": {
+          "activation_relative_l2": 0.0043932749385827315,
+          "max_abs_c": 139.0,
+          "min_a": 0.00029009650461375713
+        }
+      },
+      "timing": {
+        "scope": "20 calls per graph; 5 replays per sample; 9 rounds; order swizzle,imma_sub32,imma_sub16,fp8_full,fp8_mm,fp8_mm,fp8_full,imma_sub16,imma_sub32,swizzle",
+        "medians_ms": {
+          "swizzle": 0.520186882019043,
+          "imma_sub32": 0.49611776351928716,
+          "imma_sub16": 0.6818867111206055,
+          "fp8_full": 0.30377984046936035,
+          "fp8_mm": 0.2593996810913086
+        },
+        "mean_clock_mhz": {
+          "swizzle": 1153.3333333333333,
+          "imma_sub32": 1190.4166666666667,
+          "imma_sub16": 1213.75,
+          "fp8_full": 1266.6666666666667,
+          "fp8_mm": 1313.75
+        },
+        "raw": [
+          {
+            "round": 0,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.4614860916137695,
+            "before": {
+              "clock_mhz": 2040,
+              "power_w": 30.13,
+              "temp_c": 46
+            },
+            "after": {
+              "clock_mhz": 2040,
+              "power_w": 31.171,
+              "temp_c": 46
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.4891545486450195,
+            "before": {
+              "clock_mhz": 2040,
+              "power_w": 31.171,
+              "temp_c": 46
+            },
+            "after": {
+              "clock_mhz": 1125,
+              "power_w": 33.345,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6836531066894531,
+            "before": {
+              "clock_mhz": 1125,
+              "power_w": 33.345,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 35.271,
+              "temp_c": 49
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.300503044128418,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 35.271,
+              "temp_c": 49
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 35.271,
+              "temp_c": 49
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.25835519790649414,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 35.271,
+              "temp_c": 49
+            },
+            "after": {
+              "clock_mhz": 1365,
+              "power_w": 37.123,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2589695930480957,
+            "before": {
+              "clock_mhz": 1365,
+              "power_w": 37.123,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1365,
+              "power_w": 37.123,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3018547248840332,
+            "before": {
+              "clock_mhz": 1365,
+              "power_w": 37.123,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1305,
+              "power_w": 47.968,
+              "temp_c": 49
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6725529479980469,
+            "before": {
+              "clock_mhz": 1305,
+              "power_w": 47.968,
+              "temp_c": 49
+            },
+            "after": {
+              "clock_mhz": 1335,
+              "power_w": 52.269,
+              "temp_c": 49
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.47338497161865234,
+            "before": {
+              "clock_mhz": 1335,
+              "power_w": 52.269,
+              "temp_c": 49
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 56.177,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 0,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.49379329681396483,
+            "before": {
+              "clock_mhz": 1170,
+              "power_w": 56.177,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 56.177,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 1,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.4988723373413086,
+            "before": {
+              "clock_mhz": 1170,
+              "power_w": 56.177,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1095,
+              "power_w": 60.316,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5171507263183593,
+            "before": {
+              "clock_mhz": 1095,
+              "power_w": 60.316,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1050,
+              "power_w": 64.08,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.7130214691162109,
+            "before": {
+              "clock_mhz": 1050,
+              "power_w": 64.08,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1200,
+              "power_w": 65.835,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.30459903717041015,
+            "before": {
+              "clock_mhz": 1200,
+              "power_w": 65.835,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1275,
+              "power_w": 69.231,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.26056703567504885,
+            "before": {
+              "clock_mhz": 1275,
+              "power_w": 69.231,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1275,
+              "power_w": 69.231,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.262871036529541,
+            "before": {
+              "clock_mhz": 1275,
+              "power_w": 69.231,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1275,
+              "power_w": 69.231,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3109888076782227,
+            "before": {
+              "clock_mhz": 1275,
+              "power_w": 69.231,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1095,
+              "power_w": 71.297,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6757273864746094,
+            "before": {
+              "clock_mhz": 1095,
+              "power_w": 71.297,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 71.279,
+              "temp_c": 49
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.4831539154052734,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 71.279,
+              "temp_c": 49
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 72.173,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 1,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5071769714355469,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 72.173,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1080,
+              "power_w": 72.232,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 2,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5012787246704101,
+            "before": {
+              "clock_mhz": 1080,
+              "power_w": 72.232,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1080,
+              "power_w": 72.232,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.48545791625976564,
+            "before": {
+              "clock_mhz": 1080,
+              "power_w": 72.232,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1095,
+              "power_w": 72.214,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6817075347900391,
+            "before": {
+              "clock_mhz": 1095,
+              "power_w": 72.214,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1200,
+              "power_w": 71.643,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.30085119247436526,
+            "before": {
+              "clock_mhz": 1200,
+              "power_w": 71.643,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 71.549,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.25821184158325194,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 71.549,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 71.549,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2597273635864258,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 71.549,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1260,
+              "power_w": 71.603,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.30489599227905273,
+            "before": {
+              "clock_mhz": 1260,
+              "power_w": 71.603,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1260,
+              "power_w": 71.603,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6854041290283203,
+            "before": {
+              "clock_mhz": 1260,
+              "power_w": 71.603,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 71.544,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5125222396850586,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 71.544,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1185,
+              "power_w": 72.619,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 2,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5492428970336914,
+            "before": {
+              "clock_mhz": 1185,
+              "power_w": 72.619,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 990,
+              "power_w": 72.808,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 3,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5300121688842774,
+            "before": {
+              "clock_mhz": 990,
+              "power_w": 72.808,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1005,
+              "power_w": 72.758,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.48782337188720704,
+            "before": {
+              "clock_mhz": 1005,
+              "power_w": 72.758,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1005,
+              "power_w": 72.758,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6866432189941406,
+            "before": {
+              "clock_mhz": 1005,
+              "power_w": 72.758,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1305,
+              "power_w": 72.106,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.30060543060302736,
+            "before": {
+              "clock_mhz": 1305,
+              "power_w": 72.106,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1305,
+              "power_w": 72.106,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.25853952407836917,
+            "before": {
+              "clock_mhz": 1305,
+              "power_w": 72.106,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 72.348,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.259553279876709,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 72.348,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 72.348,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3044864082336426,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 72.348,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 72.348,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6736281585693359,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 72.348,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 72.546,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.49746944427490236,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 72.546,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 72.546,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 3,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5371084976196289,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 72.546,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1065,
+              "power_w": 72.167,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 4,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5282815933227539,
+            "before": {
+              "clock_mhz": 1065,
+              "power_w": 72.167,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1035,
+              "power_w": 71.767,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5062656021118164,
+            "before": {
+              "clock_mhz": 1035,
+              "power_w": 71.767,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1080,
+              "power_w": 71.56,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6972211456298828,
+            "before": {
+              "clock_mhz": 1080,
+              "power_w": 71.56,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1260,
+              "power_w": 70.867,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3030732727050781,
+            "before": {
+              "clock_mhz": 1260,
+              "power_w": 70.867,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1260,
+              "power_w": 70.867,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2590924835205078,
+            "before": {
+              "clock_mhz": 1260,
+              "power_w": 70.867,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 70.804,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2610073661804199,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 70.804,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 70.804,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.30695423126220706,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 70.804,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 70.998,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6693170928955078,
+            "before": {
+              "clock_mhz": 1170,
+              "power_w": 70.998,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1335,
+              "power_w": 71.227,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.4978176116943359,
+            "before": {
+              "clock_mhz": 1335,
+              "power_w": 71.227,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1095,
+              "power_w": 71.546,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 4,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5048115158081055,
+            "before": {
+              "clock_mhz": 1095,
+              "power_w": 71.546,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1095,
+              "power_w": 71.546,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 5,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5054668807983398,
+            "before": {
+              "clock_mhz": 1095,
+              "power_w": 71.546,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1080,
+              "power_w": 71.295,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.4884377670288086,
+            "before": {
+              "clock_mhz": 1080,
+              "power_w": 71.295,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1095,
+              "power_w": 71.606,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6847180938720703,
+            "before": {
+              "clock_mhz": 1095,
+              "power_w": 71.606,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1230,
+              "power_w": 70.882,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.30062591552734375,
+            "before": {
+              "clock_mhz": 1230,
+              "power_w": 70.882,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1335,
+              "power_w": 71.058,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2586726379394531,
+            "before": {
+              "clock_mhz": 1335,
+              "power_w": 71.058,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1335,
+              "power_w": 71.058,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.260761604309082,
+            "before": {
+              "clock_mhz": 1335,
+              "power_w": 71.058,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1335,
+              "power_w": 71.058,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3091251182556152,
+            "before": {
+              "clock_mhz": 1335,
+              "power_w": 71.058,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 71.273,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6761472320556641,
+            "before": {
+              "clock_mhz": 1170,
+              "power_w": 71.273,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1305,
+              "power_w": 71.422,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5105152130126953,
+            "before": {
+              "clock_mhz": 1305,
+              "power_w": 71.422,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1125,
+              "power_w": 72.529,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 5,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5307187271118164,
+            "before": {
+              "clock_mhz": 1125,
+              "power_w": 72.529,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1005,
+              "power_w": 72.808,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 6,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5197619247436523,
+            "before": {
+              "clock_mhz": 1005,
+              "power_w": 72.808,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1005,
+              "power_w": 72.808,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.4924825668334961,
+            "before": {
+              "clock_mhz": 1005,
+              "power_w": 72.808,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1035,
+              "power_w": 72.871,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6820658874511719,
+            "before": {
+              "clock_mhz": 1035,
+              "power_w": 72.871,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1155,
+              "power_w": 72.758,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3019468879699707,
+            "before": {
+              "clock_mhz": 1155,
+              "power_w": 72.758,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 72.618,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2592051124572754,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 72.618,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 72.618,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.260761604309082,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 72.618,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1230,
+              "power_w": 72.739,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.30519296646118166,
+            "before": {
+              "clock_mhz": 1230,
+              "power_w": 72.739,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1230,
+              "power_w": 72.739,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6789734649658203,
+            "before": {
+              "clock_mhz": 1230,
+              "power_w": 72.739,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 72.461,
+              "temp_c": 51
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5075251388549805,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 72.461,
+              "temp_c": 51
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 73.095,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 6,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5306367874145508,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 73.095,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1050,
+              "power_w": 72.987,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 7,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5206118392944336,
+            "before": {
+              "clock_mhz": 1050,
+              "power_w": 72.987,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1035,
+              "power_w": 72.906,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.4954419326782227,
+            "before": {
+              "clock_mhz": 1035,
+              "power_w": 72.906,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1125,
+              "power_w": 72.942,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6861824035644531,
+            "before": {
+              "clock_mhz": 1125,
+              "power_w": 72.942,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 72.151,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.30078975677490233,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 72.151,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 72.151,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2592460823059082,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 72.151,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 72.121,
+              "temp_c": 53
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.26102783203125,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 72.121,
+              "temp_c": 53
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 72.121,
+              "temp_c": 53
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.30653440475463867,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 72.121,
+              "temp_c": 53
+            },
+            "after": {
+              "clock_mhz": 1230,
+              "power_w": 71.743,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6733414459228516,
+            "before": {
+              "clock_mhz": 1230,
+              "power_w": 71.743,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 71.887,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5016678237915039,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 71.887,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 71.887,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 7,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5288959884643555,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 71.887,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1080,
+              "power_w": 71.68,
+              "temp_c": 53
+            }
+          },
+          {
+            "round": 8,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5156147384643555,
+            "before": {
+              "clock_mhz": 1080,
+              "power_w": 71.68,
+              "temp_c": 53
+            },
+            "after": {
+              "clock_mhz": 1050,
+              "power_w": 71.384,
+              "temp_c": 53
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.49351680755615235,
+            "before": {
+              "clock_mhz": 1050,
+              "power_w": 71.384,
+              "temp_c": 53
+            },
+            "after": {
+              "clock_mhz": 1095,
+              "power_w": 71.335,
+              "temp_c": 53
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6868275451660156,
+            "before": {
+              "clock_mhz": 1095,
+              "power_w": 71.335,
+              "temp_c": 53
+            },
+            "after": {
+              "clock_mhz": 1275,
+              "power_w": 70.886,
+              "temp_c": 53
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3006668853759766,
+            "before": {
+              "clock_mhz": 1275,
+              "power_w": 70.886,
+              "temp_c": 53
+            },
+            "after": {
+              "clock_mhz": 1275,
+              "power_w": 70.886,
+              "temp_c": 53
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2592460823059082,
+            "before": {
+              "clock_mhz": 1275,
+              "power_w": 70.886,
+              "temp_c": 53
+            },
+            "after": {
+              "clock_mhz": 1350,
+              "power_w": 71.085,
+              "temp_c": 53
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2609971237182617,
+            "before": {
+              "clock_mhz": 1350,
+              "power_w": 71.085,
+              "temp_c": 53
+            },
+            "after": {
+              "clock_mhz": 1350,
+              "power_w": 71.085,
+              "temp_c": 53
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.30738431930541993,
+            "before": {
+              "clock_mhz": 1350,
+              "power_w": 71.085,
+              "temp_c": 53
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 71.081,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.6813081359863281,
+            "before": {
+              "clock_mhz": 1170,
+              "power_w": 71.081,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 71.212,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.4967935943603516,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 71.212,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1095,
+              "power_w": 71.693,
+              "temp_c": 53
+            }
+          },
+          {
+            "round": 8,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5290803146362305,
+            "before": {
+              "clock_mhz": 1095,
+              "power_w": 71.693,
+              "temp_c": 53
+            },
+            "after": {
+              "clock_mhz": 1095,
+              "power_w": 71.693,
+              "temp_c": 53
+            }
+          }
+        ],
+        "ratios": {
+          "swizzle/fp8_full": {
+            "median": 1.7181037469500287,
+            "iqr": [
+              1.6935189026923985,
+              1.730077023427087
+            ]
+          },
+          "imma_sub32/swizzle": {
+            "median": 0.9520267819386503,
+            "iqr": [
+              0.9499853552047341,
+              0.9719193797071078
+            ]
+          },
+          "imma_sub32/fp8_full": {
+            "median": 1.6382964926584795,
+            "iqr": [
+              1.6283359862469828,
+              1.6459638414270579
+            ]
+          },
+          "imma_sub16/swizzle": {
+            "median": 1.3096029095684978,
+            "iqr": [
+              1.2957359302359874,
+              1.3227638694396657
+            ]
+          },
+          "imma_sub16/fp8_full": {
+            "median": 2.2480411902079034,
+            "iqr": [
+              2.240125616694614,
+              2.251495912322941
+            ]
+          },
+          "fp8_full/swizzle": {
+            "median": 0.5820370287738422,
+            "iqr": [
+              0.5780089478439018,
+              0.5904864707504446
+            ]
+          },
+          "fp8_mm/swizzle": {
+            "median": 0.4979857083462991,
+            "iqr": [
+              0.49501842562050286,
+              0.5034394723032151
+            ]
+          },
+          "fp8_mm/fp8_full": {
+            "median": 0.8555911114373407,
+            "iqr": [
+              0.852584262706981,
+              0.8564200043390825
+            ]
+          }
+        }
+      },
+      "floor": {
+        "codes_bytes_over_300GBps_us": 167.77215999999999,
+        "imma_bytes_us": 183.0638933333333,
+        "swizzle_bytes_us": 173.88885333333332
+      }
+    },
+    "8192x4096": {
+      "model_occurrences": 32,
+      "selected": "imma_sub32",
+      "accuracy": {
+        "swizzle": {
+          "relative_l2": 0.0002065280140588723,
+          "worst_row_relative_l2": 0.00022097860617959874,
+          "passes_gate": true,
+          "deterministic": true,
+          "finite": true
+        },
+        "imma_sub32": {
+          "relative_l2": 0.00226979047628342,
+          "worst_row_relative_l2": 0.0030417606724651523,
+          "passes_gate": true,
+          "deterministic": true,
+          "finite": true
+        },
+        "imma_sub16": {
+          "relative_l2": 0.0017133278227040884,
+          "worst_row_relative_l2": 0.0022154449047108666,
+          "passes_gate": true,
+          "deterministic": true,
+          "finite": true
+        },
+        "fp8_full": {
+          "relative_l2": 0.015619578194340445,
+          "worst_row_relative_l2": 0.021063495689630236,
+          "passes_gate": false,
+          "deterministic": true,
+          "finite": true
+        },
+        "fp8_mm": {
+          "relative_l2": 0.015619578194340445,
+          "worst_row_relative_l2": 0.021063495689630236,
+          "passes_gate": false,
+          "deterministic": true,
+          "finite": true
+        }
+      },
+      "fp8": {
+        "scale_shape": [],
+        "weight_scale": 0.0008326239767484367,
+        "use_fast_accum": true,
+        "weight_bytes": 33554432,
+        "activation_fp8_relative_l2_vs_fp64": 0.015619578194340445
+      },
+      "activation_reconstruction": {
+        "sub32": {
+          "activation_relative_l2": 0.005874084663072387,
+          "max_abs_c": 126.0,
+          "min_a": 0.0016362208407372236
+        },
+        "sub16": {
+          "activation_relative_l2": 0.004492393110347319,
+          "max_abs_c": 126.0,
+          "min_a": 0.00089326745364815
+        }
+      },
+      "timing": {
+        "scope": "20 calls per graph; 5 replays per sample; 9 rounds; order swizzle,imma_sub32,imma_sub16,fp8_full,fp8_mm,fp8_mm,fp8_full,imma_sub16,imma_sub32,swizzle",
+        "medians_ms": {
+          "swizzle": 0.24853504180908204,
+          "imma_sub32": 0.24773119926452636,
+          "imma_sub16": 0.3739801597595215,
+          "fp8_full": 0.12741120338439943,
+          "fp8_mm": 0.09691648006439209
+        },
+        "mean_clock_mhz": {
+          "swizzle": 1561.25,
+          "imma_sub32": 1528.75,
+          "imma_sub16": 1486.25,
+          "fp8_full": 1462.0833333333333,
+          "fp8_mm": 1466.6666666666667
+        },
+        "raw": [
+          {
+            "round": 0,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.20151296615600586,
+            "before": {
+              "clock_mhz": 1830,
+              "power_w": 68.646,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1830,
+              "power_w": 68.646,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.2524569511413574,
+            "before": {
+              "clock_mhz": 1830,
+              "power_w": 68.646,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1830,
+              "power_w": 68.646,
+              "temp_c": 50
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.3854848098754883,
+            "before": {
+              "clock_mhz": 1830,
+              "power_w": 68.646,
+              "temp_c": 50
+            },
+            "after": {
+              "clock_mhz": 1425,
+              "power_w": 68.556,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12744704246520996,
+            "before": {
+              "clock_mhz": 1425,
+              "power_w": 68.556,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1425,
+              "power_w": 68.556,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09600000381469727,
+            "before": {
+              "clock_mhz": 1425,
+              "power_w": 68.556,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1425,
+              "power_w": 68.556,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09551872253417969,
+            "before": {
+              "clock_mhz": 1425,
+              "power_w": 68.556,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1425,
+              "power_w": 68.556,
+              "temp_c": 52
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12543999671936035,
+            "before": {
+              "clock_mhz": 1425,
+              "power_w": 68.556,
+              "temp_c": 52
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 68.628,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.36341758728027346,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 68.628,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 68.628,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.23500799179077148,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 68.628,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 69.197,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 0,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.2290483283996582,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 69.197,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 69.197,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 1,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.24863744735717774,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 69.197,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 69.197,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.26163200378417967,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 69.197,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1335,
+              "power_w": 70.572,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.38175743103027343,
+            "before": {
+              "clock_mhz": 1335,
+              "power_w": 70.572,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1335,
+              "power_w": 70.572,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.1286143970489502,
+            "before": {
+              "clock_mhz": 1335,
+              "power_w": 70.572,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 69.963,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.0974028778076172,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 69.963,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 69.963,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09746432304382324,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 69.963,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 69.963,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12704768180847167,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 69.963,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 69.963,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.36380672454833984,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 69.963,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 69.841,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.23562240600585938,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 69.841,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 69.841,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 1,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.24370176315307618,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 69.841,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 69.841,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 2,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.2560307121276855,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 69.841,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1395,
+              "power_w": 70.564,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.26031103134155276,
+            "before": {
+              "clock_mhz": 1395,
+              "power_w": 70.564,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1395,
+              "power_w": 70.564,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.3906969451904297,
+            "before": {
+              "clock_mhz": 1395,
+              "power_w": 70.564,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1410,
+              "power_w": 69.664,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.13133824348449707,
+            "before": {
+              "clock_mhz": 1410,
+              "power_w": 69.664,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1410,
+              "power_w": 69.664,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09961471557617188,
+            "before": {
+              "clock_mhz": 1410,
+              "power_w": 69.664,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1410,
+              "power_w": 69.664,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09876480102539062,
+            "before": {
+              "clock_mhz": 1410,
+              "power_w": 69.664,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1410,
+              "power_w": 69.664,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12686335563659668,
+            "before": {
+              "clock_mhz": 1410,
+              "power_w": 69.664,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 69.109,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.36594688415527343,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 69.109,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 69.109,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.2430054473876953,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 69.109,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 73.36,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 2,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.2530099105834961,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 73.36,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 73.36,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 3,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.2633625602722168,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 73.36,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 73.36,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.2684927940368652,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 73.36,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 72.371,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.3846144104003906,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 72.371,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 71.345,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.128471040725708,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 71.345,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 71.345,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09694208145141602,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 71.345,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 71.345,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09582592010498046,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 71.345,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 71.345,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12712960243225097,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 71.345,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 71.345,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.3622604751586914,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 71.345,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1650,
+              "power_w": 71.315,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.23458816528320312,
+            "before": {
+              "clock_mhz": 1650,
+              "power_w": 71.315,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1650,
+              "power_w": 71.315,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 3,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.2426265525817871,
+            "before": {
+              "clock_mhz": 1650,
+              "power_w": 71.315,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1470,
+              "power_w": 71.541,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.25414655685424803,
+            "before": {
+              "clock_mhz": 1470,
+              "power_w": 71.541,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1470,
+              "power_w": 71.541,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.2620006370544434,
+            "before": {
+              "clock_mhz": 1470,
+              "power_w": 71.541,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1470,
+              "power_w": 71.541,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.3828019332885742,
+            "before": {
+              "clock_mhz": 1470,
+              "power_w": 71.541,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1395,
+              "power_w": 69.864,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12826623916625976,
+            "before": {
+              "clock_mhz": 1395,
+              "power_w": 69.864,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1395,
+              "power_w": 69.864,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09584639549255371,
+            "before": {
+              "clock_mhz": 1395,
+              "power_w": 69.864,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1395,
+              "power_w": 69.864,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09579520225524903,
+            "before": {
+              "clock_mhz": 1395,
+              "power_w": 69.864,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 70.121,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12547072410583496,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 70.121,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 70.121,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.36329471588134765,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 70.121,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 70.121,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.23266304016113282,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 70.121,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1605,
+              "power_w": 70.53,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 4,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.24657920837402345,
+            "before": {
+              "clock_mhz": 1605,
+              "power_w": 70.53,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1605,
+              "power_w": 70.53,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 5,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.2649395179748535,
+            "before": {
+              "clock_mhz": 1605,
+              "power_w": 70.53,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 69.938,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.26430463790893555,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 69.938,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 69.938,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.3840204620361328,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 69.938,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1530,
+              "power_w": 69.452,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12867584228515624,
+            "before": {
+              "clock_mhz": 1530,
+              "power_w": 69.452,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1530,
+              "power_w": 69.452,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09739263534545899,
+            "before": {
+              "clock_mhz": 1530,
+              "power_w": 69.452,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1530,
+              "power_w": 69.452,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09753600120544434,
+            "before": {
+              "clock_mhz": 1530,
+              "power_w": 69.452,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1530,
+              "power_w": 69.452,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12737536430358887,
+            "before": {
+              "clock_mhz": 1530,
+              "power_w": 69.452,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1530,
+              "power_w": 69.452,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.3646771240234375,
+            "before": {
+              "clock_mhz": 1530,
+              "power_w": 69.452,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1620,
+              "power_w": 69.562,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.23392255783081053,
+            "before": {
+              "clock_mhz": 1620,
+              "power_w": 69.562,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1620,
+              "power_w": 69.562,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.24843263626098633,
+            "before": {
+              "clock_mhz": 1620,
+              "power_w": 69.562,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1455,
+              "power_w": 69.993,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 6,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.26589183807373046,
+            "before": {
+              "clock_mhz": 1455,
+              "power_w": 69.993,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1455,
+              "power_w": 69.993,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.2668646430969238,
+            "before": {
+              "clock_mhz": 1455,
+              "power_w": 69.993,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1335,
+              "power_w": 69.452,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.3880652618408203,
+            "before": {
+              "clock_mhz": 1335,
+              "power_w": 69.452,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1335,
+              "power_w": 69.452,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12826623916625976,
+            "before": {
+              "clock_mhz": 1335,
+              "power_w": 69.452,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1335,
+              "power_w": 69.452,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.0960307216644287,
+            "before": {
+              "clock_mhz": 1335,
+              "power_w": 69.452,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 70.099,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09590784072875977,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 70.099,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 70.099,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.1262284755706787,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 70.099,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 70.099,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.36620288848876953,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 70.099,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 70.099,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.23364608764648437,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 70.099,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 70.778,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 6,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.24567808151245119,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 70.778,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 70.778,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 7,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.2634649658203125,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 70.778,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 70.764,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.26454015731811525,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 70.764,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 70.764,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.3865804672241211,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 70.764,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 70.517,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12834815979003905,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 70.517,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 70.517,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09696255683898926,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 70.517,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 70.517,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09544704437255859,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 70.517,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 70.517,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12551168441772462,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 70.517,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 70.517,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.364851188659668,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 70.517,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 70.512,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.23418880462646485,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 70.512,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 70.512,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.24595455169677735,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 70.512,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 71.1,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 8,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.26683391571044923,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 71.1,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 71.1,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.27031551361083983,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 71.1,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 70.597,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.3835494232177734,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 70.597,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 70.597,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12975104331970214,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 70.597,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 70.597,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09785344123840332,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 70.597,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 71.264,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.09689087867736816,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 71.264,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 71.264,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.12709888458251953,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 71.264,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 71.264,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.3654246520996094,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 71.264,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1620,
+              "power_w": 71.97,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.23468032836914063,
+            "before": {
+              "clock_mhz": 1620,
+              "power_w": 71.97,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1620,
+              "power_w": 71.97,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 8,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.24500223159790038,
+            "before": {
+              "clock_mhz": 1620,
+              "power_w": 71.97,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1620,
+              "power_w": 71.97,
+              "temp_c": 56
+            }
+          }
+        ],
+        "ratios": {
+          "swizzle/fp8_full": {
+            "median": 1.9796081363586677,
+            "iqr": [
+              1.9714851667996338,
+              2.0049589340947294
+            ]
+          },
+          "imma_sub32/swizzle": {
+            "median": 0.9878933970774767,
+            "iqr": [
+              0.97901424031687,
+              0.9942525373371528
+            ]
+          },
+          "imma_sub32/fp8_full": {
+            "median": 1.9495136650040374,
+            "iqr": [
+              1.9458107711242705,
+              1.9661124536979573
+            ]
+          },
+          "imma_sub16/swizzle": {
+            "median": 1.4760690824875167,
+            "iqr": [
+              1.4744184938389875,
+              1.4900304737260532
+            ]
+          },
+          "imma_sub16/fp8_full": {
+            "median": 2.930438199923175,
+            "iqr": [
+              2.9220383655197613,
+              2.9600256717592694
+            ]
+          },
+          "fp8_full/swizzle": {
+            "median": 0.5051504798517452,
+            "iqr": [
+              0.49876333275200757,
+              0.5072318153036514
+            ]
+          },
+          "fp8_mm/swizzle": {
+            "median": 0.38097262699803774,
+            "iqr": [
+              0.3797023951193005,
+              0.3897125450322235
+            ]
+          },
+          "fp8_mm/fp8_full": {
+            "median": 0.7579363400777802,
+            "iqr": [
+              0.7552766269307636,
+              0.7612877093916085
+            ]
+          }
+        }
+      },
+      "floor": {
+        "codes_bytes_over_300GBps_us": 111.84810666666667,
+        "imma_bytes_us": 122.77077333333334,
+        "swizzle_bytes_us": 117.09098666666667
+      }
+    },
+    "4096x4096": {
+      "model_occurrences": 56,
+      "selected": "imma_sub32",
+      "accuracy": {
+        "swizzle": {
+          "relative_l2": 0.0002097641767792969,
+          "worst_row_relative_l2": 0.00021977783125093985,
+          "passes_gate": true,
+          "deterministic": true,
+          "finite": true
+        },
+        "imma_sub32": {
+          "relative_l2": 0.002709982194188065,
+          "worst_row_relative_l2": 0.0031353652176041003,
+          "passes_gate": true,
+          "deterministic": true,
+          "finite": true
+        },
+        "imma_sub16": {
+          "relative_l2": 0.0020679829293125227,
+          "worst_row_relative_l2": 0.0027753436669119484,
+          "passes_gate": true,
+          "deterministic": true,
+          "finite": true
+        },
+        "fp8_full": {
+          "relative_l2": 0.019846521788432027,
+          "worst_row_relative_l2": 0.02596425738567975,
+          "passes_gate": false,
+          "deterministic": true,
+          "finite": true
+        },
+        "fp8_mm": {
+          "relative_l2": 0.019846521788432027,
+          "worst_row_relative_l2": 0.02596425738567975,
+          "passes_gate": false,
+          "deterministic": true,
+          "finite": true
+        }
+      },
+      "fp8": {
+        "scale_shape": [],
+        "weight_scale": 0.0005558647098951042,
+        "use_fast_accum": true,
+        "weight_bytes": 16777216,
+        "activation_fp8_relative_l2_vs_fp64": 0.019846521788432027
+      },
+      "activation_reconstruction": {
+        "sub32": {
+          "activation_relative_l2": 0.005874084663072387,
+          "max_abs_c": 126.0,
+          "min_a": 0.0016362208407372236
+        },
+        "sub16": {
+          "activation_relative_l2": 0.004492393110347319,
+          "max_abs_c": 126.0,
+          "min_a": 0.00089326745364815
+        }
+      },
+      "timing": {
+        "scope": "20 calls per graph; 5 replays per sample; 9 rounds; order swizzle,imma_sub32,imma_sub16,fp8_full,fp8_mm,fp8_mm,fp8_full,imma_sub16,imma_sub32,swizzle",
+        "medians_ms": {
+          "swizzle": 0.12805631637573242,
+          "imma_sub32": 0.12925439834594726,
+          "imma_sub16": 0.23297024726867677,
+          "fp8_full": 0.08314879894256591,
+          "fp8_mm": 0.0478924822807312
+        },
+        "mean_clock_mhz": {
+          "swizzle": 1670.8333333333333,
+          "imma_sub32": 1647.9166666666667,
+          "imma_sub16": 1624.1666666666667,
+          "fp8_full": 1602.5,
+          "fp8_mm": 1601.6666666666667
+        },
+        "raw": [
+          {
+            "round": 0,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.10682368278503418,
+            "before": {
+              "clock_mhz": 1995,
+              "power_w": 72.131,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1995,
+              "power_w": 70.438,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.11988991737365723,
+            "before": {
+              "clock_mhz": 1995,
+              "power_w": 70.438,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1995,
+              "power_w": 70.438,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23164928436279297,
+            "before": {
+              "clock_mhz": 1995,
+              "power_w": 70.438,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1995,
+              "power_w": 70.438,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.0818892765045166,
+            "before": {
+              "clock_mhz": 1995,
+              "power_w": 70.438,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1995,
+              "power_w": 70.438,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04790272235870361,
+            "before": {
+              "clock_mhz": 1995,
+              "power_w": 70.438,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1995,
+              "power_w": 70.438,
+              "temp_c": 54
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04828159809112549,
+            "before": {
+              "clock_mhz": 1995,
+              "power_w": 70.438,
+              "temp_c": 54
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 70.294,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08311807632446289,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 70.294,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 70.294,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23012351989746094,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 70.294,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 70.294,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.1264844799041748,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 70.294,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 70.294,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 0,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.12377087593078613,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 70.294,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 70.294,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 1,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.1343488025665283,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 70.294,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 70.258,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.14807040214538575,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 70.258,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 70.258,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23897087097167968,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 70.258,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 70.258,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08279040336608887,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 70.258,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 70.258,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04790272235870361,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 70.258,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 70.258,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04779007911682129,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 70.258,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1650,
+              "power_w": 68.631,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08447999954223633,
+            "before": {
+              "clock_mhz": 1650,
+              "power_w": 68.631,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1650,
+              "power_w": 68.631,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23008256912231445,
+            "before": {
+              "clock_mhz": 1650,
+              "power_w": 68.631,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1650,
+              "power_w": 68.631,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.12783616065979003,
+            "before": {
+              "clock_mhz": 1650,
+              "power_w": 68.631,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1650,
+              "power_w": 68.631,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 1,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.12626943588256836,
+            "before": {
+              "clock_mhz": 1650,
+              "power_w": 68.631,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1650,
+              "power_w": 68.631,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 2,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.1363046360015869,
+            "before": {
+              "clock_mhz": 1650,
+              "power_w": 68.631,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 69.638,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.147128324508667,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 69.638,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 69.638,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23973888397216797,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 69.638,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 69.638,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08355839729309082,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 69.638,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 69.638,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04788224220275879,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 69.638,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1620,
+              "power_w": 68.805,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04783103942871094,
+            "before": {
+              "clock_mhz": 1620,
+              "power_w": 68.805,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1620,
+              "power_w": 68.805,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08843263626098632,
+            "before": {
+              "clock_mhz": 1620,
+              "power_w": 68.805,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1620,
+              "power_w": 68.805,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23372800827026366,
+            "before": {
+              "clock_mhz": 1620,
+              "power_w": 68.805,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1620,
+              "power_w": 68.805,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.1295359992980957,
+            "before": {
+              "clock_mhz": 1620,
+              "power_w": 68.805,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1620,
+              "power_w": 68.805,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 2,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.12825599670410157,
+            "before": {
+              "clock_mhz": 1620,
+              "power_w": 68.805,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 67.475,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.13659135818481447,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 67.475,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 67.475,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.14644224166870118,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 67.475,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 67.475,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.24086528778076172,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 67.475,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 67.475,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08224767684936524,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 67.475,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 66.691,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04774911880493164,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 66.691,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 66.691,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04902912139892578,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 66.691,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 66.691,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08558591842651367,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 66.691,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 66.691,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23137279510498046,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 66.691,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 66.691,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.12637184143066407,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 66.691,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 66.691,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 3,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.12761088371276855,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 66.691,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1695,
+              "power_w": 66.423,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.1367244815826416,
+            "before": {
+              "clock_mhz": 1695,
+              "power_w": 66.423,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1695,
+              "power_w": 66.423,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.1492684841156006,
+            "before": {
+              "clock_mhz": 1695,
+              "power_w": 66.423,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1695,
+              "power_w": 66.423,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.24025087356567382,
+            "before": {
+              "clock_mhz": 1695,
+              "power_w": 66.423,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1695,
+              "power_w": 66.423,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08266752243041992,
+            "before": {
+              "clock_mhz": 1695,
+              "power_w": 66.423,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 65.018,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04829184055328369,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 65.018,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 65.018,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04783103942871094,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 65.018,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 65.018,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08265727996826172,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 65.018,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 65.018,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.22978559494018555,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 65.018,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 65.018,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.126494722366333,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 65.018,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 65.018,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 4,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.12522496223449708,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 65.018,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1695,
+              "power_w": 63.659,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.13536255836486816,
+            "before": {
+              "clock_mhz": 1695,
+              "power_w": 63.659,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1695,
+              "power_w": 63.659,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.14785535812377928,
+            "before": {
+              "clock_mhz": 1695,
+              "power_w": 63.659,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1695,
+              "power_w": 63.659,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23778303146362303,
+            "before": {
+              "clock_mhz": 1695,
+              "power_w": 63.659,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1695,
+              "power_w": 63.659,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08284159660339356,
+            "before": {
+              "clock_mhz": 1695,
+              "power_w": 63.659,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1560,
+              "power_w": 65.014,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04784128189086914,
+            "before": {
+              "clock_mhz": 1560,
+              "power_w": 65.014,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1560,
+              "power_w": 65.014,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04773888111114502,
+            "before": {
+              "clock_mhz": 1560,
+              "power_w": 65.014,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1560,
+              "power_w": 65.014,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.0851968002319336,
+            "before": {
+              "clock_mhz": 1560,
+              "power_w": 65.014,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1560,
+              "power_w": 65.014,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23015424728393555,
+            "before": {
+              "clock_mhz": 1560,
+              "power_w": 65.014,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1560,
+              "power_w": 65.014,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.12897279739379883,
+            "before": {
+              "clock_mhz": 1560,
+              "power_w": 65.014,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1560,
+              "power_w": 65.014,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 5,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.12559359550476074,
+            "before": {
+              "clock_mhz": 1560,
+              "power_w": 65.014,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 64.82,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 6,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.1349631977081299,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 64.82,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 64.82,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.14526464462280272,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 64.82,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 64.82,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23937023162841797,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 64.82,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1530,
+              "power_w": 63.736,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08352767944335937,
+            "before": {
+              "clock_mhz": 1530,
+              "power_w": 63.736,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1530,
+              "power_w": 63.736,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04790272235870361,
+            "before": {
+              "clock_mhz": 1530,
+              "power_w": 63.736,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1530,
+              "power_w": 63.736,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04783103942871094,
+            "before": {
+              "clock_mhz": 1530,
+              "power_w": 63.736,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1530,
+              "power_w": 63.736,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08668160438537598,
+            "before": {
+              "clock_mhz": 1530,
+              "power_w": 63.736,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1530,
+              "power_w": 63.736,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23119871139526368,
+            "before": {
+              "clock_mhz": 1530,
+              "power_w": 63.736,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1530,
+              "power_w": 63.736,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.12877823829650878,
+            "before": {
+              "clock_mhz": 1530,
+              "power_w": 63.736,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 64.191,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 6,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.12785663604736328,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 64.191,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 64.191,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.13634559631347656,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 64.191,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 64.191,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.14671872138977052,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 64.191,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1665,
+              "power_w": 64.191,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.24099840164184572,
+            "before": {
+              "clock_mhz": 1665,
+              "power_w": 64.191,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 63.494,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08186880111694336,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 63.494,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 63.494,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.047237119674682616,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 63.494,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 63.494,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.048496642112731934,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 63.494,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 63.494,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08552448272705078,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 63.494,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 63.494,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23165952682495117,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 63.494,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 63.494,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.12639231681823732,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 63.494,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 63.985,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.12758015632629394,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 63.985,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 63.985,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 8,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.1368166446685791,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 63.985,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 63.985,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.1492684841156006,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 63.985,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1635,
+              "power_w": 63.985,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.24048639297485352,
+            "before": {
+              "clock_mhz": 1635,
+              "power_w": 63.985,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 63.913,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08270848274230957,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 63.913,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 63.913,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04808703899383545,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 63.913,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 63.913,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.04834303855895996,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 63.913,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 63.913,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.08317952156066895,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 63.913,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 63.913,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.23221248626708985,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 63.913,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 63.913,
+              "temp_c": 58
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.1275391960144043,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 63.913,
+              "temp_c": 58
+            },
+            "after": {
+              "clock_mhz": 1620,
+              "power_w": 64.572,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 8,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.12518400192260742,
+            "before": {
+              "clock_mhz": 1620,
+              "power_w": 64.572,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1620,
+              "power_w": 64.572,
+              "temp_c": 56
+            }
+          }
+        ],
+        "ratios": {
+          "swizzle/fp8_full": {
+            "median": 1.5580654671581804,
+            "iqr": [
+              1.5440981117101849,
+              1.5766806563502385
+            ]
+          },
+          "imma_sub32/swizzle": {
+            "median": 1.052734460755099,
+            "iqr": [
+              1.042702443736645,
+              1.0586617592347252
+            ]
+          },
+          "imma_sub32/fp8_full": {
+            "median": 1.6315531420157794,
+            "iqr": [
+              1.610034874449349,
+              1.649464328464553
+            ]
+          },
+          "imma_sub16/swizzle": {
+            "median": 1.7931643757339228,
+            "iqr": [
+              1.7904620678721754,
+              1.7997721221863314
+            ]
+          },
+          "imma_sub16/fp8_full": {
+            "median": 2.804162792332516,
+            "iqr": [
+              2.784704493498136,
+              2.8236373503927483
+            ]
+          },
+          "fp8_full/swizzle": {
+            "median": 0.6418215544074288,
+            "iqr": [
+              0.6342438438452329,
+              0.6476272410516957
+            ]
+          },
+          "fp8_mm/swizzle": {
+            "median": 0.36630362978287345,
+            "iqr": [
+              0.36425622990264,
+              0.3671761502379096
+            ]
+          },
+          "fp8_mm/fp8_full": {
+            "median": 0.5720844800497709,
+            "iqr": [
+              0.568799541069652,
+              0.581296266465869
+            ]
+          }
+        }
+      },
+      "floor": {
+        "codes_bytes_over_300GBps_us": 55.92405333333333,
+        "imma_bytes_us": 62.477653333333336,
+        "swizzle_bytes_us": 60.29312
+      }
+    },
+    "4096x12288": {
+      "model_occurrences": 32,
+      "selected": "imma_sub16",
+      "accuracy": {
+        "swizzle": {
+          "relative_l2": 0.0002045915205846419,
+          "worst_row_relative_l2": 0.0002552491966987369,
+          "passes_gate": true,
+          "deterministic": true,
+          "finite": true
+        },
+        "imma_sub32": {
+          "relative_l2": 0.005080126451847322,
+          "worst_row_relative_l2": 0.006141250750617196,
+          "passes_gate": false,
+          "deterministic": true,
+          "finite": true
+        },
+        "imma_sub16": {
+          "relative_l2": 0.003753387057526189,
+          "worst_row_relative_l2": 0.004656971417032831,
+          "passes_gate": true,
+          "deterministic": true,
+          "finite": true
+        },
+        "fp8_full": {
+          "relative_l2": 0.03090363544476136,
+          "worst_row_relative_l2": 0.044815612840275285,
+          "passes_gate": false,
+          "deterministic": true,
+          "finite": true
+        },
+        "fp8_mm": {
+          "relative_l2": 0.03090363544476136,
+          "worst_row_relative_l2": 0.044815612840275285,
+          "passes_gate": false,
+          "deterministic": true,
+          "finite": true
+        }
+      },
+      "fp8": {
+        "scale_shape": [],
+        "weight_scale": 0.0014562145806849003,
+        "use_fast_accum": true,
+        "weight_bytes": 50331648,
+        "activation_fp8_relative_l2_vs_fp64": 0.03090363544476136
+      },
+      "activation_reconstruction": {
+        "sub32": {
+          "activation_relative_l2": 0.006256805256827998,
+          "max_abs_c": 126.0,
+          "min_a": 1.4443490726989694e-05
+        },
+        "sub16": {
+          "activation_relative_l2": 0.004621255690198652,
+          "max_abs_c": 133.0,
+          "min_a": 5.368625352275558e-06
+        }
+      },
+      "timing": {
+        "scope": "20 calls per graph; 5 replays per sample; 9 rounds; order swizzle,imma_sub32,imma_sub16,fp8_full,fp8_mm,fp8_mm,fp8_full,imma_sub16,imma_sub32,swizzle",
+        "medians_ms": {
+          "swizzle": 0.5259929656982422,
+          "imma_sub32": 0.5267967987060547,
+          "imma_sub16": 0.7953152084350585,
+          "fp8_full": 0.3921868896484375,
+          "fp8_mm": 0.22441983222961426
+        },
+        "mean_clock_mhz": {
+          "swizzle": 1259.1666666666667,
+          "imma_sub32": 1308.3333333333333,
+          "imma_sub16": 1325.8333333333333,
+          "fp8_full": 1365,
+          "fp8_mm": 1420
+        },
+        "raw": [
+          {
+            "round": 0,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.49048576354980467,
+            "before": {
+              "clock_mhz": 1890,
+              "power_w": 59.797,
+              "temp_c": 53
+            },
+            "after": {
+              "clock_mhz": 1890,
+              "power_w": 59.797,
+              "temp_c": 53
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.522946548461914,
+            "before": {
+              "clock_mhz": 1890,
+              "power_w": 59.797,
+              "temp_c": 53
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 62.279,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.7772467041015625,
+            "before": {
+              "clock_mhz": 1170,
+              "power_w": 62.279,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 64.084,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.38767616271972655,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 64.084,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 64.084,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.22200319290161133,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 64.084,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1455,
+              "power_w": 64.753,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.22533119201660157,
+            "before": {
+              "clock_mhz": 1455,
+              "power_w": 64.753,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1455,
+              "power_w": 64.753,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 0,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.39378944396972654,
+            "before": {
+              "clock_mhz": 1455,
+              "power_w": 64.753,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1305,
+              "power_w": 64.93,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.829327392578125,
+            "before": {
+              "clock_mhz": 1305,
+              "power_w": 64.93,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1440,
+              "power_w": 64.795,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 0,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5088768005371094,
+            "before": {
+              "clock_mhz": 1440,
+              "power_w": 64.795,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 66.407,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 0,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5408153533935547,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 66.407,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1095,
+              "power_w": 67.221,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 1,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5521510314941406,
+            "before": {
+              "clock_mhz": 1095,
+              "power_w": 67.221,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1095,
+              "power_w": 67.221,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5475225448608398,
+            "before": {
+              "clock_mhz": 1095,
+              "power_w": 67.221,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1080,
+              "power_w": 70.877,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.7745945739746094,
+            "before": {
+              "clock_mhz": 1080,
+              "power_w": 70.877,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 73.644,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.38567935943603515,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 73.644,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1575,
+              "power_w": 73.644,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2225049591064453,
+            "before": {
+              "clock_mhz": 1575,
+              "power_w": 73.644,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 72.316,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2266214370727539,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 72.316,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1485,
+              "power_w": 72.316,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 1,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3974451065063477,
+            "before": {
+              "clock_mhz": 1485,
+              "power_w": 72.316,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1215,
+              "power_w": 71.819,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.7669862365722656,
+            "before": {
+              "clock_mhz": 1215,
+              "power_w": 71.819,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1590,
+              "power_w": 71.259,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 1,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5185126495361329,
+            "before": {
+              "clock_mhz": 1590,
+              "power_w": 71.259,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 72.179,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 1,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5234380722045898,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 72.179,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 72.768,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5235814285278321,
+            "before": {
+              "clock_mhz": 1170,
+              "power_w": 72.768,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 72.768,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.525475845336914,
+            "before": {
+              "clock_mhz": 1170,
+              "power_w": 72.768,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 73.659,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.8076902770996094,
+            "before": {
+              "clock_mhz": 1170,
+              "power_w": 73.659,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1455,
+              "power_w": 71.939,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3885055923461914,
+            "before": {
+              "clock_mhz": 1455,
+              "power_w": 71.939,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1455,
+              "power_w": 71.939,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.22350847244262695,
+            "before": {
+              "clock_mhz": 1455,
+              "power_w": 71.939,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1395,
+              "power_w": 71.93,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2282700729370117,
+            "before": {
+              "clock_mhz": 1395,
+              "power_w": 71.93,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1395,
+              "power_w": 71.93,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3964416122436523,
+            "before": {
+              "clock_mhz": 1395,
+              "power_w": 71.93,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1305,
+              "power_w": 71.217,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.7740006256103515,
+            "before": {
+              "clock_mhz": 1305,
+              "power_w": 71.217,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1530,
+              "power_w": 71.875,
+              "temp_c": 55
+            }
+          },
+          {
+            "round": 2,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5156864166259766,
+            "before": {
+              "clock_mhz": 1530,
+              "power_w": 71.875,
+              "temp_c": 55
+            },
+            "after": {
+              "clock_mhz": 1230,
+              "power_w": 72.786,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 2,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5165363311767578,
+            "before": {
+              "clock_mhz": 1230,
+              "power_w": 72.786,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1230,
+              "power_w": 72.786,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5255680084228516,
+            "before": {
+              "clock_mhz": 1230,
+              "power_w": 72.786,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1185,
+              "power_w": 73.409,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5255680084228516,
+            "before": {
+              "clock_mhz": 1185,
+              "power_w": 73.409,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1185,
+              "power_w": 73.722,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.8225791931152344,
+            "before": {
+              "clock_mhz": 1185,
+              "power_w": 73.722,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 72.585,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3830579376220703,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 72.585,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1470,
+              "power_w": 71.998,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.22219776153564452,
+            "before": {
+              "clock_mhz": 1470,
+              "power_w": 71.998,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1470,
+              "power_w": 71.998,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.22663167953491212,
+            "before": {
+              "clock_mhz": 1470,
+              "power_w": 71.998,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1350,
+              "power_w": 72.488,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3980390548706055,
+            "before": {
+              "clock_mhz": 1350,
+              "power_w": 72.488,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1350,
+              "power_w": 72.488,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.8369254302978516,
+            "before": {
+              "clock_mhz": 1350,
+              "power_w": 72.488,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1380,
+              "power_w": 72.322,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.529725456237793,
+            "before": {
+              "clock_mhz": 1380,
+              "power_w": 72.322,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1245,
+              "power_w": 72.583,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 3,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5236531066894531,
+            "before": {
+              "clock_mhz": 1245,
+              "power_w": 72.583,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1245,
+              "power_w": 72.583,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.519188461303711,
+            "before": {
+              "clock_mhz": 1245,
+              "power_w": 72.583,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 73.63,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5276671981811524,
+            "before": {
+              "clock_mhz": 1170,
+              "power_w": 73.63,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1185,
+              "power_w": 73.392,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.7642829132080078,
+            "before": {
+              "clock_mhz": 1185,
+              "power_w": 73.392,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 72.183,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.38496257781982424,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 72.183,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1515,
+              "power_w": 72.313,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.22349824905395507,
+            "before": {
+              "clock_mhz": 1515,
+              "power_w": 72.313,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1515,
+              "power_w": 72.313,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.22740991592407225,
+            "before": {
+              "clock_mhz": 1515,
+              "power_w": 72.313,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1260,
+              "power_w": 72.834,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3955814361572266,
+            "before": {
+              "clock_mhz": 1260,
+              "power_w": 72.834,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1260,
+              "power_w": 72.834,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.7965695953369141,
+            "before": {
+              "clock_mhz": 1260,
+              "power_w": 72.834,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1470,
+              "power_w": 73.063,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5366988754272461,
+            "before": {
+              "clock_mhz": 1470,
+              "power_w": 73.063,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1200,
+              "power_w": 72.537,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 4,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5375897598266601,
+            "before": {
+              "clock_mhz": 1200,
+              "power_w": 72.537,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1200,
+              "power_w": 72.537,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5309952163696289,
+            "before": {
+              "clock_mhz": 1200,
+              "power_w": 72.537,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1140,
+              "power_w": 73.314,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.531486701965332,
+            "before": {
+              "clock_mhz": 1140,
+              "power_w": 73.314,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1140,
+              "power_w": 73.025,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.7673856353759766,
+            "before": {
+              "clock_mhz": 1140,
+              "power_w": 73.025,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1320,
+              "power_w": 72.405,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3831296157836914,
+            "before": {
+              "clock_mhz": 1320,
+              "power_w": 72.405,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1425,
+              "power_w": 72.662,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2224947166442871,
+            "before": {
+              "clock_mhz": 1425,
+              "power_w": 72.662,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1425,
+              "power_w": 72.662,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.227010555267334,
+            "before": {
+              "clock_mhz": 1425,
+              "power_w": 72.662,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 73.281,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 5,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.39639041900634764,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 73.281,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1290,
+              "power_w": 73.281,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.8354611206054687,
+            "before": {
+              "clock_mhz": 1290,
+              "power_w": 73.281,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1455,
+              "power_w": 71.825,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5224652862548829,
+            "before": {
+              "clock_mhz": 1455,
+              "power_w": 71.825,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1455,
+              "power_w": 71.825,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 5,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5261619186401367,
+            "before": {
+              "clock_mhz": 1245,
+              "power_w": 71.825,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1245,
+              "power_w": 71.34,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 6,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5312716674804687,
+            "before": {
+              "clock_mhz": 1245,
+              "power_w": 71.34,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1155,
+              "power_w": 72.037,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5361663818359375,
+            "before": {
+              "clock_mhz": 1155,
+              "power_w": 72.037,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1140,
+              "power_w": 71.838,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.7940608215332031,
+            "before": {
+              "clock_mhz": 1140,
+              "power_w": 71.838,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1305,
+              "power_w": 71.325,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3829759979248047,
+            "before": {
+              "clock_mhz": 1305,
+              "power_w": 71.325,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1425,
+              "power_w": 71.626,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2234060859680176,
+            "before": {
+              "clock_mhz": 1425,
+              "power_w": 71.626,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1425,
+              "power_w": 71.626,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.22790143966674806,
+            "before": {
+              "clock_mhz": 1425,
+              "power_w": 71.626,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1260,
+              "power_w": 72.25,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 6,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3963391876220703,
+            "before": {
+              "clock_mhz": 1260,
+              "power_w": 72.25,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1260,
+              "power_w": 72.25,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.7728537750244141,
+            "before": {
+              "clock_mhz": 1260,
+              "power_w": 72.25,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 72.421,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 6,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5259263992309571,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 72.421,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 72.421,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 6,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5284249496459961,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 72.421,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1200,
+              "power_w": 71.918,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 7,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5321830368041992,
+            "before": {
+              "clock_mhz": 1200,
+              "power_w": 71.918,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1155,
+              "power_w": 72.427,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.524851188659668,
+            "before": {
+              "clock_mhz": 1155,
+              "power_w": 72.427,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1185,
+              "power_w": 73.022,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.8255795288085938,
+            "before": {
+              "clock_mhz": 1185,
+              "power_w": 73.022,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1365,
+              "power_w": 72.199,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3905843353271484,
+            "before": {
+              "clock_mhz": 1365,
+              "power_w": 72.199,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1305,
+              "power_w": 72.88,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.22323200225830078,
+            "before": {
+              "clock_mhz": 1305,
+              "power_w": 72.88,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1305,
+              "power_w": 72.88,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.227061767578125,
+            "before": {
+              "clock_mhz": 1305,
+              "power_w": 72.88,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1245,
+              "power_w": 73.429,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3962470245361328,
+            "before": {
+              "clock_mhz": 1245,
+              "power_w": 73.429,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1245,
+              "power_w": 73.429,
+              "temp_c": 56
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.8302899169921875,
+            "before": {
+              "clock_mhz": 1245,
+              "power_w": 73.429,
+              "temp_c": 56
+            },
+            "after": {
+              "clock_mhz": 1425,
+              "power_w": 72.382,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 7,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5308313751220703,
+            "before": {
+              "clock_mhz": 1425,
+              "power_w": 72.382,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1425,
+              "power_w": 72.382,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 7,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5258240127563476,
+            "before": {
+              "clock_mhz": 1425,
+              "power_w": 72.382,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1185,
+              "power_w": 71.988,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5256806564331055,
+            "before": {
+              "clock_mhz": 1185,
+              "power_w": 71.988,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 72.568,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5295513534545898,
+            "before": {
+              "clock_mhz": 1170,
+              "power_w": 72.568,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 72.016,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.8086937713623047,
+            "before": {
+              "clock_mhz": 1170,
+              "power_w": 72.016,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1350,
+              "power_w": 71.143,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.3864064025878906,
+            "before": {
+              "clock_mhz": 1350,
+              "power_w": 71.143,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 71.134,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.2225356864929199,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 71.134,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1500,
+              "power_w": 71.134,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_mm",
+            "ms_per_matrix": 0.22772735595703125,
+            "before": {
+              "clock_mhz": 1500,
+              "power_w": 71.134,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1260,
+              "power_w": 72.059,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "fp8_full",
+            "ms_per_matrix": 0.4000460815429687,
+            "before": {
+              "clock_mhz": 1260,
+              "power_w": 72.059,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1260,
+              "power_w": 72.059,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub16",
+            "ms_per_matrix": 0.770140151977539,
+            "before": {
+              "clock_mhz": 1260,
+              "power_w": 72.059,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1545,
+              "power_w": 71.678,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "imma_sub32",
+            "ms_per_matrix": 0.5422284698486328,
+            "before": {
+              "clock_mhz": 1545,
+              "power_w": 71.678,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1545,
+              "power_w": 71.678,
+              "temp_c": 57
+            }
+          },
+          {
+            "round": 8,
+            "arm": "swizzle",
+            "ms_per_matrix": 0.5308723068237304,
+            "before": {
+              "clock_mhz": 1545,
+              "power_w": 71.678,
+              "temp_c": 57
+            },
+            "after": {
+              "clock_mhz": 1170,
+              "power_w": 71.03,
+              "temp_c": 58
+            }
+          }
+        ],
+        "ratios": {
+          "swizzle/fp8_full": {
+            "median": 1.3446427068493871,
+            "iqr": [
+              1.3432661054857962,
+              1.3561641623419047
+            ]
+          },
+          "imma_sub32/swizzle": {
+            "median": 1.0010042153867245,
+            "iqr": [
+              0.9978029581374018,
+              1.005787483172877
+            ]
+          },
+          "imma_sub32/fp8_full": {
+            "median": 1.352052469702197,
+            "iqr": [
+              1.3416884705322016,
+              1.3628030236152033
+            ]
+          },
+          "imma_sub16/swizzle": {
+            "median": 1.5161859130493773,
+            "iqr": [
+              1.4786445207370336,
+              1.557812815563859
+            ]
+          },
+          "imma_sub16/fp8_full": {
+            "median": 2.0150283910322826,
+            "iqr": [
+              2.007538859877437,
+              2.0561969987252047
+            ]
+          },
+          "fp8_full/swizzle": {
+            "median": 0.7436919821943523,
+            "iqr": [
+              0.7373738576553599,
+              0.7444541300611074
+            ]
+          },
+          "fp8_mm/swizzle": {
+            "median": 0.4261623014732839,
+            "iqr": [
+              0.4256056422530073,
+              0.42777393116275175
+            ]
+          },
+          "fp8_mm/fp8_full": {
+            "median": 0.5746142225413385,
+            "iqr": [
+              0.5725241531248454,
+              0.5766436420491665
+            ]
+          }
+        }
+      },
+      "floor": {
+        "codes_bytes_over_300GBps_us": 167.77215999999999,
+        "imma_bytes_us": 187.43296,
+        "swizzle_bytes_us": 180.87936
+      }
+    }
+  },
+  "seconds": 23.787338733673096,
+  "script_sha256": "a1c3c427a638a749384090167d33bc31c46bbb88c2998fd7ff50a1ba5e2c018d",
+  "base_script_sha256": "6c19fab560c21d18e569fa65e06e770dd1d452a1d9e846ac4a9b8fe5cc7ac46c"
+}

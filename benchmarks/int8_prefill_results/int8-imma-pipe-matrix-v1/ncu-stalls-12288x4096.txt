@@ -1,0 +1,99 @@
+==PROF== Connected to process 303083 (/usr/bin/python3.13)
+==PROF== Profiling "k5_group_mma_swizzle_cuda": 0%....50%....100% - 11 passes
+==PROF== Profiling "k5_group_imma_cuda": 0%....50%....100% - 11 passes
+==PROF== Profiling "k5_group_imma_pipe_cuda": 0%....50%....100% - 11 passes
+TARGET_DONE
+==PROF== Disconnected from process 303083
+[303083] python3.13@127.0.0.1
+  void k5_group_mma_swizzle_cuda<32>(const signed char *, const short *, const __half *, __half *, int, int, int, int, int, int, float, float, int, int) (2, 192, 1)x(256, 1, 1), Context 1, Stream 7, Device 0, CC 8.9
+    Section: Command line profiler metrics
+    --------------------------------------------------------------------------- ----------- ------------
+    Metric Name                                                                 Metric Unit Metric Value
+    --------------------------------------------------------------------------- ----------- ------------
+    dram__throughput.avg.pct_of_peak_sustained_elapsed                                    %        33.75
+    gpu__time_duration.sum                                                               us       664.93
+    l1tex__data_bank_conflicts_pipe_lsu_mem_shared.sum                                           446,320
+    l1tex__data_pipe_lsu_wavefronts_mem_shared.sum                                            13,871,937
+    l1tex__throughput.avg.pct_of_peak_sustained_active                                    %        62.44
+    sm__inst_executed_pipe_lsu.avg.pct_of_peak_sustained_active                           %        32.30
+    sm__pipe_tensor_cycles_active.avg.pct_of_peak_sustained_active                        %        45.87
+    sm__throughput.avg.pct_of_peak_sustained_elapsed                                      %        41.08
+    sm__warps_active.avg.pct_of_peak_sustained_active                                     %        43.59
+    smsp__average_warps_issue_stalled_barrier_per_issue_active.ratio                   inst         1.66
+    smsp__average_warps_issue_stalled_dispatch_stall_per_issue_active.ratio            inst         0.13
+    smsp__average_warps_issue_stalled_imc_miss_per_issue_active.ratio                  inst         0.02
+    smsp__average_warps_issue_stalled_lg_throttle_per_issue_active.ratio               inst         0.18
+    smsp__average_warps_issue_stalled_long_scoreboard_per_issue_active.ratio           inst         3.86
+    smsp__average_warps_issue_stalled_math_pipe_throttle_per_issue_active.ratio        inst         1.71
+    smsp__average_warps_issue_stalled_mio_throttle_per_issue_active.ratio              inst         0.70
+    smsp__average_warps_issue_stalled_no_instruction_per_issue_active.ratio            inst         0.05
+    smsp__average_warps_issue_stalled_not_selected_per_issue_active.ratio              inst         0.70
+    smsp__average_warps_issue_stalled_selected_per_issue_active.ratio                  inst         1.00
+    smsp__average_warps_issue_stalled_short_scoreboard_per_issue_active.ratio          inst         1.33
+    smsp__average_warps_issue_stalled_wait_per_issue_active.ratio                      inst         1.91
+    smsp__inst_executed.sum                                                            inst   42,771,456
+    smsp__issue_active.avg.pct_of_peak_sustained_active                                   %        39.02
+    --------------------------------------------------------------------------- ----------- ------------
+
+  void k5_group_imma_cuda<32>(const signed char *, const short *, const signed char *, const float2 *, const short *, __half *, int, int, int, int, int, float, float, int, int) (2, 192, 1)x(256, 1, 1), Context 1, Stream 7, Device 0, CC 8.9
+    Section: Command line profiler metrics
+    --------------------------------------------------------------------------- ----------- ------------
+    Metric Name                                                                 Metric Unit Metric Value
+    --------------------------------------------------------------------------- ----------- ------------
+    dram__throughput.avg.pct_of_peak_sustained_elapsed                                    %        36.06
+    gpu__time_duration.sum                                                               us       670.14
+    l1tex__data_bank_conflicts_pipe_lsu_mem_shared.sum                                           589,824
+    l1tex__data_pipe_lsu_wavefronts_mem_shared.sum                                            11,947,306
+    l1tex__throughput.avg.pct_of_peak_sustained_active                                    %        74.06
+    sm__inst_executed_pipe_lsu.avg.pct_of_peak_sustained_active                           %        34.46
+    sm__pipe_tensor_cycles_active.avg.pct_of_peak_sustained_active                        %        22.49
+    sm__throughput.avg.pct_of_peak_sustained_elapsed                                      %        42.58
+    sm__warps_active.avg.pct_of_peak_sustained_active                                     %        44.77
+    smsp__average_warps_issue_stalled_barrier_per_issue_active.ratio                   inst         2.37
+    smsp__average_warps_issue_stalled_dispatch_stall_per_issue_active.ratio            inst         0.29
+    smsp__average_warps_issue_stalled_imc_miss_per_issue_active.ratio                  inst         0.02
+    smsp__average_warps_issue_stalled_lg_throttle_per_issue_active.ratio               inst         0.13
+    smsp__average_warps_issue_stalled_long_scoreboard_per_issue_active.ratio           inst         2.76
+    smsp__average_warps_issue_stalled_math_pipe_throttle_per_issue_active.ratio        inst         0.62
+    smsp__average_warps_issue_stalled_mio_throttle_per_issue_active.ratio              inst         0.41
+    smsp__average_warps_issue_stalled_no_instruction_per_issue_active.ratio            inst         0.07
+    smsp__average_warps_issue_stalled_not_selected_per_issue_active.ratio              inst         1.22
+    smsp__average_warps_issue_stalled_selected_per_issue_active.ratio                  inst         1.00
+    smsp__average_warps_issue_stalled_short_scoreboard_per_issue_active.ratio          inst         1.16
+    smsp__average_warps_issue_stalled_wait_per_issue_active.ratio                      inst         1.20
+    smsp__inst_executed.sum                                                            inst   52,795,392
+    smsp__issue_active.avg.pct_of_peak_sustained_active                                   %        47.17
+    --------------------------------------------------------------------------- ----------- ------------
+
+  void k5_group_imma_pipe_cuda<32, 4>(const signed char *, const short *, const signed char *, const float2 *, const short *, __half *, int, int, int, int, float, float, int, int) (2, 192, 1)x(256, 1, 1), Context 1, Stream 7, Device 0, CC 8.9
+    Section: Command line profiler metrics
+    --------------------------------------------------------------------------- ----------- ------------
+    Metric Name                                                                 Metric Unit Metric Value
+    --------------------------------------------------------------------------- ----------- ------------
+    dram__throughput.avg.pct_of_peak_sustained_elapsed                                    %        32.82
+    gpu__time_duration.sum                                                               us       849.76
+    l1tex__data_bank_conflicts_pipe_lsu_mem_shared.sum                                             2,775
+    l1tex__data_pipe_lsu_wavefronts_mem_shared.sum                                             9,419,238
+    l1tex__throughput.avg.pct_of_peak_sustained_active                                    %        34.12
+    sm__inst_executed_pipe_lsu.avg.pct_of_peak_sustained_active                           %        34.12
+    sm__pipe_tensor_cycles_active.avg.pct_of_peak_sustained_active                        %        17.23
+    sm__throughput.avg.pct_of_peak_sustained_elapsed                                      %        57.40
+    sm__warps_active.avg.pct_of_peak_sustained_active                                     %        31.08
+    smsp__average_warps_issue_stalled_barrier_per_issue_active.ratio                   inst         0.65
+    smsp__average_warps_issue_stalled_dispatch_stall_per_issue_active.ratio            inst         0.23
+    smsp__average_warps_issue_stalled_imc_miss_per_issue_active.ratio                  inst         0.01
+    smsp__average_warps_issue_stalled_lg_throttle_per_issue_active.ratio               inst         0.07
+    smsp__average_warps_issue_stalled_long_scoreboard_per_issue_active.ratio           inst         0.01
+    smsp__average_warps_issue_stalled_math_pipe_throttle_per_issue_active.ratio        inst         0.34
+    smsp__average_warps_issue_stalled_mio_throttle_per_issue_active.ratio              inst         0.26
+    smsp__average_warps_issue_stalled_no_instruction_per_issue_active.ratio            inst         0.26
+    smsp__average_warps_issue_stalled_not_selected_per_issue_active.ratio              inst         0.95
+    smsp__average_warps_issue_stalled_selected_per_issue_active.ratio                  inst         1.00
+    smsp__average_warps_issue_stalled_short_scoreboard_per_issue_active.ratio          inst         0.60
+    smsp__average_warps_issue_stalled_wait_per_issue_active.ratio                      inst         1.30
+    smsp__inst_executed.sum                                                            inst   89,995,008
+    smsp__issue_active.avg.pct_of_peak_sustained_active                                   %        61.65
+    --------------------------------------------------------------------------- ----------- ------------
+
+
+--- stderr ---

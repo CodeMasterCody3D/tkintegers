@@ -1,0 +1,115 @@
+{
+  "scope": "Activation sub-group scale error only; same inputs/reference as the first probe.",
+  "gate_relative_l2": 0.005,
+  "cases": {
+    "8192x4096": {
+      "model_occurrences": 32,
+      "variants": {
+        "affine_int8_sub32 (1 dot, 4 partials/group)": {
+          "relative_l2": 0.0021174560413507112,
+          "worst_row_relative_l2": 0.0025926581072353784,
+          "passes_gate": true
+        },
+        "sym_int8_sub32 (1 dot, 4 partials/group)": {
+          "relative_l2": 0.0033424707912236306,
+          "worst_row_relative_l2": 0.005049287668576334,
+          "passes_gate": true
+        },
+        "affine_int8_sub64 (1 dot, 2 partials/group)": {
+          "relative_l2": 0.002924490839991727,
+          "worst_row_relative_l2": 0.004600637850747661,
+          "passes_gate": true
+        },
+        "affine_int8_sub128 (repeat of first probe)": {
+          "relative_l2": 0.00382009747162364,
+          "worst_row_relative_l2": 0.005621904817178998,
+          "passes_gate": true
+        }
+      }
+    },
+    "4096x4096": {
+      "model_occurrences": 56,
+      "variants": {
+        "affine_int8_sub32 (1 dot, 4 partials/group)": {
+          "relative_l2": 0.0025703778953341774,
+          "worst_row_relative_l2": 0.003105006595534616,
+          "passes_gate": true
+        },
+        "sym_int8_sub32 (1 dot, 4 partials/group)": {
+          "relative_l2": 0.0039918454094697445,
+          "worst_row_relative_l2": 0.0050688894229936705,
+          "passes_gate": true
+        },
+        "affine_int8_sub64 (1 dot, 2 partials/group)": {
+          "relative_l2": 0.0034397799613189095,
+          "worst_row_relative_l2": 0.004298139735846648,
+          "passes_gate": true
+        },
+        "affine_int8_sub128 (repeat of first probe)": {
+          "relative_l2": 0.004558102954940219,
+          "worst_row_relative_l2": 0.005746230457720898,
+          "passes_gate": true
+        }
+      }
+    },
+    "12288x4096": {
+      "model_occurrences": 64,
+      "variants": {
+        "affine_int8_sub32 (1 dot, 4 partials/group)": {
+          "relative_l2": 0.004078880596247885,
+          "worst_row_relative_l2": 0.0054426089696340794,
+          "passes_gate": true
+        },
+        "sym_int8_sub32 (1 dot, 4 partials/group)": {
+          "relative_l2": 0.00562983421284679,
+          "worst_row_relative_l2": 0.009377873808564838,
+          "passes_gate": false
+        },
+        "affine_int8_sub64 (1 dot, 2 partials/group)": {
+          "relative_l2": 0.00517114080234957,
+          "worst_row_relative_l2": 0.007642936736420469,
+          "passes_gate": false
+        },
+        "affine_int8_sub128 (repeat of first probe)": {
+          "relative_l2": 0.006453333704682564,
+          "worst_row_relative_l2": 0.01060131883693843,
+          "passes_gate": false
+        }
+      }
+    },
+    "4096x12288": {
+      "model_occurrences": 32,
+      "variants": {
+        "affine_int8_sub32 (1 dot, 4 partials/group)": {
+          "relative_l2": 0.00505162206490073,
+          "worst_row_relative_l2": 0.00610199483692625,
+          "passes_gate": false
+        },
+        "sym_int8_sub32 (1 dot, 4 partials/group)": {
+          "relative_l2": 0.008255272021724122,
+          "worst_row_relative_l2": 0.010096822631654807,
+          "passes_gate": false
+        },
+        "affine_int8_sub64 (1 dot, 2 partials/group)": {
+          "relative_l2": 0.007097078168135372,
+          "worst_row_relative_l2": 0.008311620903743095,
+          "passes_gate": false
+        },
+        "affine_int8_sub128 (repeat of first probe)": {
+          "relative_l2": 0.00977080871066056,
+          "worst_row_relative_l2": 0.012266645817452756,
+          "passes_gate": false
+        }
+      }
+    }
+  },
+  "all_four_pass": {
+    "affine_int8_sub32 (1 dot, 4 partials/group)": false,
+    "sym_int8_sub32 (1 dot, 4 partials/group)": false,
+    "affine_int8_sub64 (1 dot, 2 partials/group)": false,
+    "affine_int8_sub128 (repeat of first probe)": false
+  },
+  "seconds": 1.4748923778533936,
+  "script_sha256": "38450ed24f864f3bb599b2ed04996851abf2aae3d0d732de449023f7790e410c",
+  "base_script_sha256": "6c19fab560c21d18e569fa65e06e770dd1d452a1d9e846ac4a9b8fe5cc7ac46c"
+}
