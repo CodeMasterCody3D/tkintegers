@@ -1,3 +1,5 @@
+![TK Integers — ternary computing and smaller weights, with metallic packed-cell cores and −1, 0, +1 chips](docs/figures/tk-integers-banner.webp)
+
 # Tk-Integers
 
 **TK stands for Ternary Kluster** — the name behind **TKintegers**.
