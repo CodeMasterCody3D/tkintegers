@@ -33,6 +33,22 @@ class CodecTests(unittest.TestCase):
         self.assertFalse(meta.dtype.is_floating_point)
         self.assertEqual(unpack_hi(codes, meta).shape, values.shape)
 
+    def test_ktrit_validates_code_range_for_all_supported_k(self):
+        for k in (1, 2, 3, 5, 8, 10, 16):
+            levels = (3 ** k - 1) // 2
+
+            valid_codes = torch.tensor([[-levels, levels]], dtype=torch.int32)
+            packed, width, _ = pack_ktrit(valid_codes, k)
+            self.assertTrue(
+                torch.equal(unpack_ktrit(packed, width, k), valid_codes)
+            )
+
+            for invalid_code in (-levels - 1, levels + 1):
+                codes = torch.tensor([[invalid_code]], dtype=torch.int32)
+                with self.subTest(k=k, code=invalid_code):
+                    with self.assertRaises(ValueError):
+                        pack_ktrit(codes, k=k)
+
 
 if __name__ == "__main__":
     unittest.main()
