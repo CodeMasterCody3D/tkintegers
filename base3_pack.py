@@ -33,6 +33,8 @@ def pack_ktrit(codes, k: int):
     L = (3 ** k - 1) // 2
     if not 1 <= k <= 16:
         raise ValueError("k must be between 1 and 16")
+    if torch.any((codes < -L) | (codes > L)):
+        raise ValueError(f"codes must be in the range [{-L}, {L}] for k={k}")
     pad = (-(I * k)) % 5
     nbytes = (I * k + pad) // 5
     digits = ((codes.to(torch.int64) + L).reshape(O, I, 1) // _pow3(k, codes.device)) % 3
